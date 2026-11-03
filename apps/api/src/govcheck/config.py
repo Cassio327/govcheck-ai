@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     groq_base_url: str = "https://api.groq.com/openai/v1"
     ollama_base_url: str = "http://ollama:11434"
     ollama_model: str = "llama3.2:3b"
+    embedding_provider: Literal["fake", "sentence-transformer"] = "fake"
+    embedding_model: str = "intfloat/multilingual-e5-small"
+    embedding_dimension: int = 384
     max_upload_bytes: int = 5_242_880
     max_pdf_pages: int = 50
     retention_minutes: int = 60
