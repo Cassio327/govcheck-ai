@@ -11,6 +11,22 @@ permissions:
 jobs:
   api:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: govcheck_test
+          POSTGRES_USER: govcheck
+          POSTGRES_PASSWORD: govcheck
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U govcheck -d govcheck_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://govcheck:govcheck@localhost:5432/govcheck_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,6 +38,8 @@ jobs:
         run: python -m pip install -e 'apps/api[dev]'
       - name: Lint API
         run: python -m ruff check apps/api/src apps/api/tests
+      - name: Apply PostgreSQL migrations
+        run: cd apps/api && alembic upgrade head
       - name: Test API
         run: cd apps/api && python -m pytest
 
