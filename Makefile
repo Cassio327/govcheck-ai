@@ -3,7 +3,7 @@ API_DIR := apps/api
 WEB_DIR := apps/web
 API_PYTHON ?= $(if $(wildcard $(API_DIR)/.venv/bin/python),$(abspath $(API_DIR)/.venv/bin/python),python)
 
-.PHONY: install test-api test-db lint-api smoke-embeddings test-web build-web verify dev
+.PHONY: install test-api test-db test-retrieval lint-api smoke-embeddings test-web build-web verify dev
 
 install:
 	cd $(API_DIR) && python -m pip install -e '.[dev]'
@@ -14,6 +14,9 @@ test-api:
 
 test-db:
 	cd $(API_DIR) && $(API_PYTHON) -m pytest tests/integration/db -v
+
+test-retrieval:
+	cd $(API_DIR) && $(API_PYTHON) -m pytest tests/infrastructure/retrieval tests/integration/retrieval -v
 
 lint-api:
 	cd $(API_DIR) && $(API_PYTHON) -m ruff check src tests
