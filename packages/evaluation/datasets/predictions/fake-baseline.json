@@ -1,0 +1,63 @@
+{
+  "dataset_version": "2026.11.1",
+  "run_id": "fake-baseline-2026-11-07",
+  "provider": "deterministic-contract-fixture",
+  "created_at": "2026-11-07T00:00:00Z",
+  "notes": [
+    "Esta linha de base valida o contrato do avaliador; não representa qualidade de um modelo real.",
+    "Duas falhas intencionais permanecem visíveis para demonstrar que o harness penaliza respostas e campos incorretos."
+  ],
+  "questions": [
+    {"question_id":"ufpe-q-object","answer":"Serviço de outsourcing de impressão para a UFPE.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":42},
+    {"question_id":"ufpe-q-total-value","answer":"R$ 7.337.052,96.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":39},
+    {"question_id":"ufpe-q-session","answer":"2 de maio de 2024, às 10h, horário de Brasília.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":41},
+    {"question_id":"ufpe-q-duration","answer":"A vigência é de 48 meses.","cited_pages":[3,3],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":45},
+    {"question_id":"ufpe-q-group","answer":"Grupo único com 8 itens para a mesma empresa.","cited_pages":[3],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":44},
+    {"question_id":"unirg-q-object","answer":"Aquisição futura e parcelada de materiais e equipamentos de TIC.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":46},
+    {"question_id":"unirg-q-proposal-deadline","answer":"22 de agosto de 2024, às 08h50.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":40},
+    {"question_id":"unirg-q-session","answer":"22 de agosto de 2024, às 09h.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":38},
+    {"question_id":"unirg-q-criterion","answer":"O critério é maior desconto.","cited_pages":[2],"claims_total":1,"claims_unsupported":1,"rubric_score":1,"latency_ms":43},
+    {"question_id":"unirg-q-sample","answer":"Não será exigida amostra.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":37},
+    {"question_id":"pfba-q-object","answer":"Suporte técnico e manutenção da infraestrutura de TIC.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":47},
+    {"question_id":"pfba-q-total-value","answer":"R$ 987.897,60.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":36},
+    {"question_id":"pfba-q-session","answer":"25 de outubro de 2023, às 10h.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":41},
+    {"question_id":"pfba-q-criterion","answer":"Menor preço.","cited_pages":[1],"claims_total":1,"claims_unsupported":0,"rubric_score":4,"latency_ms":35},
+    {"question_id":"pfba-q-bid-interval","answer":"O intervalo não foi informado.","cited_pages":[],"claims_total":1,"claims_unsupported":1,"rubric_score":1,"latency_ms":49}
+  ],
+  "findings": [
+    {"document_id":"ufpe-pe-90001-2024","category":"obligation","field":"objeto","value":"Serviço de outsourcing de impressão com equipamentos, gerenciamento, manutenção e suprimentos, exceto papel","cited_pages":[1]},
+    {"document_id":"ufpe-pe-90001-2024","category":"value","field":"valor_total","value":"R$ 7.337.052,96","cited_pages":[1]},
+    {"document_id":"ufpe-pe-90001-2024","category":"deadline","field":"data_sessao","value":"02/05/2024 às 10h","cited_pages":[1]},
+    {"document_id":"ufpe-pe-90001-2024","category":"obligation","field":"vigencia_contratual","value":"48 meses","cited_pages":[3]},
+    {"document_id":"ufpe-pe-90001-2024","category":"criterion","field":"criterio_julgamento","value":"Menor preço por grupo","cited_pages":[1]},
+    {"document_id":"unirg-pe-014-2024","category":"obligation","field":"objeto","value":"Aquisição futura, eventual e parcelada de materiais e equipamentos de TIC","cited_pages":[1]},
+    {"document_id":"unirg-pe-014-2024","category":"deadline","field":"recebimento_propostas","value":"22/08/2024 às 08h50","cited_pages":[1]},
+    {"document_id":"unirg-pe-014-2024","category":"deadline","field":"abertura_sessao","value":"22/08/2024 às 09h","cited_pages":[1]},
+    {"document_id":"unirg-pe-014-2024","category":"criterion","field":"criterio_julgamento","value":"Maior desconto","cited_pages":[1]},
+    {"document_id":"unirg-pe-014-2024","category":"obligation","field":"amostra","value":"Não será exigida","cited_pages":[1]},
+    {"document_id":"pfba-pe-002-2023","category":"obligation","field":"objeto","value":"Serviços continuados de suporte técnico em TIC e manutenção da infraestrutura de TIC","cited_pages":[1]},
+    {"document_id":"pfba-pe-002-2023","category":"value","field":"valor_total","value":"R$ 987.897,60","cited_pages":[1]},
+    {"document_id":"pfba-pe-002-2023","category":"deadline","field":"data_sessao","value":"25/10/2023 às 10h","cited_pages":[1]},
+    {"document_id":"pfba-pe-002-2023","category":"criterion","field":"criterio_julgamento","value":"Menor preço","cited_pages":[1]},
+    {"document_id":"pfba-pe-002-2023","category":"criterion","field":"modo_disputa","value":"Aberto","cited_pages":[1]}
+  ],
+  "latencies": [
+    {"document_id":"ufpe-pe-90001-2024","stage":"indexing","milliseconds":120},
+    {"document_id":"ufpe-pe-90001-2024","stage":"extraction","milliseconds":240},
+    {"document_id":"ufpe-pe-90001-2024","stage":"external_validation","milliseconds":20},
+    {"document_id":"ufpe-pe-90001-2024","stage":"evidence_critic","milliseconds":140},
+    {"document_id":"ufpe-pe-90001-2024","stage":"synthesis","milliseconds":60},
+    {"document_id":"ufpe-pe-90001-2024","stage":"total","milliseconds":580},
+    {"document_id":"unirg-pe-014-2024","stage":"indexing","milliseconds":180},
+    {"document_id":"unirg-pe-014-2024","stage":"extraction","milliseconds":320},
+    {"document_id":"unirg-pe-014-2024","stage":"external_validation","milliseconds":25},
+    {"document_id":"unirg-pe-014-2024","stage":"evidence_critic","milliseconds":160},
+    {"document_id":"unirg-pe-014-2024","stage":"synthesis","milliseconds":70},
+    {"document_id":"unirg-pe-014-2024","stage":"total","milliseconds":755},
+    {"document_id":"pfba-pe-002-2023","stage":"indexing","milliseconds":150},
+    {"document_id":"pfba-pe-002-2023","stage":"extraction","milliseconds":280},
+    {"document_id":"pfba-pe-002-2023","stage":"evidence_critic","milliseconds":150},
+    {"document_id":"pfba-pe-002-2023","stage":"synthesis","milliseconds":65},
+    {"document_id":"pfba-pe-002-2023","stage":"total","milliseconds":665}
+  ]
+}

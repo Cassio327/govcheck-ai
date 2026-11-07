@@ -65,7 +65,11 @@ async def analysis_events(
 
     async def stream():
         for event in events:
-            data = json.dumps(event.payload, ensure_ascii=False, separators=(",", ":"))
+            data = json.dumps(
+                {**event.payload, "recorded_at": event.created_at.isoformat()},
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
             yield f"id: {event.sequence}\nevent: {event.event_type}\ndata: {data}\n\n"
 
     return StreamingResponse(

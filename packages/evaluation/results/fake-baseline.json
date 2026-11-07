@@ -1,0 +1,74 @@
+{
+  "dataset_version": "2026.11.1",
+  "run_id": "fake-baseline-2026-11-07",
+  "provider": "deterministic-contract-fixture",
+  "evaluated_at": "2026-11-07T00:00:00Z",
+  "document_count": 3,
+  "question_count": 15,
+  "finding_count": 15,
+  "citation_recall": 0.8666666666666667,
+  "fields": {
+    "true_positives": 13,
+    "false_positives": 2,
+    "false_negatives": 2,
+    "precision": 0.8666666666666667,
+    "recall": 0.8666666666666667,
+    "f1": 0.8666666666666667
+  },
+  "unsupported_claim_rate": 0.13333333333333333,
+  "claims_assessed": 15,
+  "unsupported_claims": 2,
+  "rubric": {
+    "normalized_score": 0.9,
+    "scored_cases": 15,
+    "pending_cases": 0,
+    "max_score_per_case": 4
+  },
+  "latency": {
+    "stages": {
+      "indexing": {
+        "count": 3,
+        "mean_ms": 150.0,
+        "p50_ms": 150.0,
+        "p95_ms": 177.0
+      },
+      "extraction": {
+        "count": 3,
+        "mean_ms": 280.0,
+        "p50_ms": 280.0,
+        "p95_ms": 316.0
+      },
+      "external_validation": {
+        "count": 2,
+        "mean_ms": 22.5,
+        "p50_ms": 22.5,
+        "p95_ms": 24.75
+      },
+      "evidence_critic": {
+        "count": 3,
+        "mean_ms": 150.0,
+        "p50_ms": 150.0,
+        "p95_ms": 159.0
+      },
+      "synthesis": {
+        "count": 3,
+        "mean_ms": 65.0,
+        "p50_ms": 65.0,
+        "p95_ms": 69.5
+      },
+      "total": {
+        "count": 3,
+        "mean_ms": 666.6666666666666,
+        "p50_ms": 665.0,
+        "p95_ms": 746.0
+      }
+    },
+    "missing_events": 1,
+    "expected_events": 18
+  },
+  "limitations": [
+    "Esta linha de base valida o contrato do avaliador; não representa qualidade de um modelo real.",
+    "Duas falhas intencionais permanecem visíveis para demonstrar que o harness penaliza respostas e campos incorretos.",
+    "1 de 18 evento está ausente na medição de latência."
+  ]
+}

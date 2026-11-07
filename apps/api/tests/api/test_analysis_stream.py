@@ -47,6 +47,8 @@ async def test_analysis_sse_replays_after_disconnect_without_duplicate_terminal(
     initial_events = parse_sse(initial_stream.text)
     assert len(initial_events) >= 5
     assert [event["id"] for event in initial_events] == list(range(1, len(initial_events) + 1))
+    recorded_at = [event["data"]["recorded_at"] for event in initial_events]
+    assert recorded_at == sorted(recorded_at)
 
     replay = await api_client.get(
         f"/api/v1/documents/{document_id}/events",
