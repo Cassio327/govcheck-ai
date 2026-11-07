@@ -27,6 +27,8 @@ def test_initial_migration_creates_complete_persistence_schema(tmp_path: Path) -
         "stream_events",
         "tool_runs",
     }
+    tool_run_columns = {column["name"] for column in inspect(engine).get_columns("tool_runs")}
+    assert "request" in tool_run_columns
 
     command.downgrade(config, "base")
     assert inspect(engine).get_table_names() == ["alembic_version"]

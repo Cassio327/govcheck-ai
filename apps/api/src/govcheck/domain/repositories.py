@@ -4,7 +4,7 @@ from uuid import UUID
 
 from govcheck.domain.documents import AnalysisJob, Chunk, Document, Page
 from govcheck.domain.events import StreamEvent
-from govcheck.domain.findings import Finding
+from govcheck.domain.findings import Finding, ToolRun
 
 
 class DocumentRepository(Protocol):
@@ -39,10 +39,17 @@ class EventRepository(Protocol):
     async def list_after(self, job_id: UUID, sequence: int) -> list[StreamEvent]: ...
 
 
+class ToolRunRepository(Protocol):
+    async def add(self, tool_run: ToolRun) -> None: ...
+
+    async def list_for_document(self, document_id: UUID) -> list[ToolRun]: ...
+
+
 class UnitOfWork(Protocol):
     documents: DocumentRepository
     findings: FindingRepository
     events: EventRepository
+    tools: ToolRunRepository
 
     async def __aenter__(self) -> "UnitOfWork": ...
 

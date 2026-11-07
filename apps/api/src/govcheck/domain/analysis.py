@@ -34,14 +34,25 @@ class ExternalValidation(DomainModel):
 
 
 class ToolRegistryPort(Protocol):
-    async def validate_identifier(self, identifier: str) -> ExternalValidation: ...
+    async def validate_identifier(
+        self,
+        identifier: str,
+        *,
+        document_id: UUID | None = None,
+    ) -> ExternalValidation: ...
 
 
 class UnavailableToolRegistry:
     """Safe default until an allowlisted public-data adapter is configured."""
 
-    async def validate_identifier(self, identifier: str) -> ExternalValidation:
+    async def validate_identifier(
+        self,
+        identifier: str,
+        *,
+        document_id: UUID | None = None,
+    ) -> ExternalValidation:
         del identifier
+        del document_id
         return ExternalValidation(
             status="unavailable",
             error_code="tool_not_configured",

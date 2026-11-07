@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from govcheck.domain.documents import AnalysisJob, Chunk, Document, Page
 from govcheck.domain.events import StreamEvent
-from govcheck.domain.findings import Citation, Finding
+from govcheck.domain.findings import Citation, Finding, ToolRun
 from govcheck.infrastructure.db.models import (
     AnalysisJobRecord,
     ChunkRecord,
@@ -18,6 +18,7 @@ from govcheck.infrastructure.db.models import (
     FindingRecord,
     PageRecord,
     StreamEventRecord,
+    ToolRunRecord,
 )
 
 
@@ -244,6 +245,49 @@ class SqlAlchemyEventRepository:
                 event_type=record.event_type,
                 payload=record.payload,
                 created_at=_aware(record.created_at),
+            )
+            for record in records
+        ]
+
+
+class SqlAlchemyToolRunRepository:
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def add(self, tool_run: ToolRun) -> None:
+        self._session.add(
+            ToolRunRecord(
+                id=tool_run.id,
+                document_id=tool_run.document_id,
+                name=tool_run.name,
+                status=tool_run.status,
+                request=tool_run.request,
+                source_url=tool_run.source_url,
+                checked_at=tool_run.checked_at,
+                data=tool_run.data,
+                error_code=tool_run.error_code,
+            )
+        )
+
+    async def list_for_document(self, document_id: UUID) -> list[ToolRun]:
+        records = (
+            await self._session.scalars(
+                select(ToolRunRecord)
+                .where(ToolRunRecord.document_id == document_id)
+                .order_by(ToolRunRecord.checked_at, ToolRunRecord.id)
+            )
+        ).all()
+        return [
+            ToolRun(
+                id=record.id,
+                document_id=record.document_id,
+                name=record.name,
+                status=record.status,
+                request=record.request,
+                source_url=record.source_url,
+                checked_at=_aware(record.checked_at),
+                data=record.data,
+                error_code=record.error_code,
             )
             for record in records
         ]

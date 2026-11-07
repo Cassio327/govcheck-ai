@@ -6,6 +6,7 @@ from govcheck.infrastructure.db.repositories import (
     SqlAlchemyDocumentRepository,
     SqlAlchemyEventRepository,
     SqlAlchemyFindingRepository,
+    SqlAlchemyToolRunRepository,
 )
 
 
@@ -24,6 +25,7 @@ class SqlAlchemyUnitOfWork:
         self.documents = SqlAlchemyDocumentRepository(self._session)
         self.findings = SqlAlchemyFindingRepository(self._session)
         self.events = SqlAlchemyEventRepository(self._session)
+        self.tools = SqlAlchemyToolRunRepository(self._session)
         return self
 
     async def __aexit__(

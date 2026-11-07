@@ -89,7 +89,7 @@ class StubToolRegistry:
         self.result = result
         self.calls = []
 
-    async def validate_identifier(self, identifier):
+    async def validate_identifier(self, identifier, *, document_id=None):
         self.calls.append(identifier)
         return self.result
 

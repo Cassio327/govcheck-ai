@@ -34,6 +34,7 @@ class ToolRun(DomainModel):
     document_id: UUID
     name: str
     status: Literal["verified", "not_found", "unavailable", "invalid"]
+    request: dict[str, Any] = Field(default_factory=dict)
     source_url: str | None = None
     checked_at: datetime = Field(default_factory=utc_now)
     data: dict[str, Any] = Field(default_factory=dict)

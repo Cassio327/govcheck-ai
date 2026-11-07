@@ -91,7 +91,8 @@ def build_nodes(dependencies: AnalysisDependencies):
         for index, draft in enumerate(state["drafts"]):
             if draft.external_identifier:
                 validations[index] = await dependencies.tool_registry.validate_identifier(
-                    draft.external_identifier
+                    draft.external_identifier,
+                    document_id=state["document_id"],
                 )
         await _record_event(
             dependencies,

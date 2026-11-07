@@ -103,6 +103,7 @@ class ToolRunRecord(Base):
     )
     name: Mapped[str] = mapped_column(sa.String(128))
     status: Mapped[str] = mapped_column(sa.String(32), index=True)
+    request: Mapped[dict[str, Any]] = mapped_column(sa.JSON, default=dict)
     source_url: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
     checked_at: Mapped[datetime] = mapped_column(sa.DateTime(timezone=True))
     data: Mapped[dict[str, Any]] = mapped_column(sa.JSON, default=dict)
