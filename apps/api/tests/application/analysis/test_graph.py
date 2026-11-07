@@ -162,6 +162,18 @@ async def test_graph_runs_distinct_nodes_and_replaces_findings_on_rerun() -> Non
         "analysis.synthesis.completed",
         "analysis.completed",
     ]
+    validation_event = next(
+        event
+        for event in unit_of_work.events.events
+        if event.job_id == first_job.id
+        and event.event_type == "analysis.external_validation.completed"
+    )
+    assert validation_event.payload["validation_status_counts"] == {
+        "verified": 1,
+        "not_found": 0,
+        "unavailable": 0,
+        "invalid": 0,
+    }
 
 
 @pytest.mark.asyncio

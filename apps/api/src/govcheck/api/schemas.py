@@ -49,7 +49,7 @@ class FindingCitationResponse(BaseModel):
 
 class FindingResponse(BaseModel):
     id: UUID
-    category: str
+    category: Literal["deadline", "document", "value", "criterion", "sanction", "obligation"]
     title: str
     value: str = Field(description="Model interpretation, not a final legal determination.")
     evidence_status: Literal["supported", "unsupported", "conflicting"]

@@ -94,11 +94,18 @@ def build_nodes(dependencies: AnalysisDependencies):
                     draft.external_identifier,
                     document_id=state["document_id"],
                 )
+        status_counts = {
+            status: sum(validation.status == status for validation in validations.values())
+            for status in ("verified", "not_found", "unavailable", "invalid")
+        }
         await _record_event(
             dependencies,
             state,
             "analysis.external_validation.completed",
-            {"validation_count": len(validations)},
+            {
+                "validation_count": len(validations),
+                "validation_status_counts": status_counts,
+            },
         )
         return {"validations": validations}
 

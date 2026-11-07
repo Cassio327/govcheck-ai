@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 5_242_880
     max_pdf_pages: int = 50
     retention_minutes: int = 60
+    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     @model_validator(mode="after")
     def validate_production_database(self) -> "Settings":

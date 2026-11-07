@@ -15,3 +15,14 @@ def test_openapi_contains_the_versioned_public_contract() -> None:
     assert "pdf" in descriptions
     assert "model" in descriptions
     assert "external" in descriptions
+    finding_category = schema["components"]["schemas"]["FindingResponse"]["properties"][
+        "category"
+    ]
+    assert set(finding_category["enum"]) == {
+        "deadline",
+        "document",
+        "value",
+        "criterion",
+        "sanction",
+        "obligation",
+    }

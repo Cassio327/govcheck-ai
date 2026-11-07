@@ -3,7 +3,7 @@ API_DIR := apps/api
 WEB_DIR := apps/web
 API_PYTHON ?= $(if $(wildcard $(API_DIR)/.venv/bin/python),$(abspath $(API_DIR)/.venv/bin/python),python)
 
-.PHONY: install test-api test-db test-retrieval lint-api smoke-embeddings check-openapi test-web build-web verify dev
+.PHONY: install test-api test-db test-retrieval lint-api smoke-embeddings check-openapi generate-contracts check-contracts test-web build-web verify dev
 
 install:
 	cd $(API_DIR) && python -m pip install -e '.[dev]'
@@ -27,13 +27,19 @@ smoke-embeddings:
 check-openapi:
 	cd $(API_DIR) && $(API_PYTHON) -m govcheck.api.openapi_check
 
+generate-contracts:
+	cd $(API_DIR) && $(API_PYTHON) -m govcheck.api.generate_web_contracts ../web/src/lib/contracts.generated.ts
+
+check-contracts: generate-contracts
+	git diff --exit-code -- $(WEB_DIR)/src/lib/contracts.generated.ts
+
 test-web:
 	pnpm --dir $(WEB_DIR) test
 
 build-web:
 	pnpm --dir $(WEB_DIR) build
 
-verify: lint-api test-api build-web
+verify: lint-api test-api check-contracts test-web build-web
 
 dev:
 	docker compose up --build
