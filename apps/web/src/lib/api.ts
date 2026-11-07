@@ -115,7 +115,7 @@ export async function* watchAnalysis(
 ): AsyncGenerator<StreamEvent> {
   let lastEventId = 0;
   const timeoutMs = options.timeoutMs ?? 300_000;
-  const pollIntervalMs = options.pollIntervalMs ?? 500;
+  const pollIntervalMs = options.pollIntervalMs ?? 1_000;
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (options.signal?.aborted) throw abortError();

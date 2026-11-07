@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -7,10 +8,29 @@ from fastapi.responses import StreamingResponse
 
 from govcheck.api.dependencies import AppServices, get_services, get_session_id
 from govcheck.api.errors import APIError
+from govcheck.api.middleware.logging import log_security_event
 from govcheck.api.schemas import AnalysisJobResponse, FindingResponse
-from govcheck.application.analysis.graph import DocumentNotAccessible
+from govcheck.application.analysis.graph import (
+    AnalysisAlreadyRunning,
+    DocumentNotAccessible,
+    RunAnalysis,
+)
+from govcheck.domain.documents import AnalysisJob
 
 router = APIRouter(prefix="/api/v1/documents", tags=["analysis"])
+
+
+async def run_analysis_in_background(analysis: RunAnalysis, job: AnalysisJob) -> None:
+    try:
+        await analysis.run(job)
+    except Exception as error:
+        # Background exceptions otherwise escape after the 202 response has started
+        # and may be rendered by the ASGI server with their sensitive messages.
+        log_security_event(
+            "analysis.background.failed",
+            level=logging.ERROR,
+            error_type=type(error).__name__,
+        )
 
 
 @router.post(
@@ -35,7 +55,13 @@ async def start_analysis(
         raise APIError(
             404, "document_not_found", "Documento não encontrado nesta sessão."
         ) from error
-    background_tasks.add_task(services.analysis.run, job)
+    except AnalysisAlreadyRunning as error:
+        raise APIError(
+            409,
+            "analysis_already_running",
+            "Esta sessão já possui uma análise em andamento.",
+        ) from error
+    background_tasks.add_task(run_analysis_in_background, services.analysis, job)
     return AnalysisJobResponse.model_validate(job)
 
 

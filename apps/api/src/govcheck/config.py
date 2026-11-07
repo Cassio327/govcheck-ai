@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 5_242_880
     max_pdf_pages: int = 50
     retention_minutes: int = 60
+    analysis_job_timeout_minutes: int = Field(default=10, ge=5, le=60)
+    rate_limit_requests: int = Field(default=120, ge=1, le=10_000)
+    rate_limit_client_requests: int = Field(default=600, ge=1, le=100_000)
+    rate_limit_window_seconds: int = Field(default=60, ge=1, le=3_600)
+    rate_limit_max_keys: int = Field(default=10_000, ge=100, le=100_000)
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     @model_validator(mode="after")

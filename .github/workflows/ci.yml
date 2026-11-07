@@ -28,8 +28,8 @@ jobs:
     env:
       DATABASE_URL: postgresql+asyncpg://govcheck:govcheck@localhost:5432/govcheck_test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -48,17 +48,19 @@ jobs:
   web:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.25.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
       - name: Install web
         run: pnpm --dir apps/web install --frozen-lockfile
+      - name: Audit web dependencies
+        run: pnpm --dir apps/web audit --audit-level high
       - name: Test web components
         run: pnpm --dir apps/web test
       - name: Type-check web
@@ -73,8 +75,8 @@ jobs:
   evaluation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -87,3 +89,27 @@ jobs:
         run: make eval-fake EVAL_PYTHON=python
       - name: Check versioned evaluation outputs
         run: git diff --exit-code -- docs/evaluation.md packages/evaluation/results/fake-baseline.json
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Scan repository history for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Build an isolated production dependency environment
+        run: |
+          python -m venv .audit-venv
+          .audit-venv/bin/python -m pip install --upgrade "pip>=26.2"
+          .audit-venv/bin/python -m pip install ./apps/api ./packages/evaluation
+      - name: Audit Python dependencies for known vulnerabilities
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          virtual-environment: .audit-venv/

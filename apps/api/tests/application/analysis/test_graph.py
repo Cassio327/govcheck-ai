@@ -39,6 +39,28 @@ class MemoryEvents:
     async def update_job_status(self, job_id, status):
         self.jobs[job_id] = self.jobs[job_id].model_copy(update={"status": status})
 
+    async def active_for_session(self, session_id):
+        return next(
+            (
+                job
+                for job in self.jobs.values()
+                if job.session_id == session_id and job.status in {"pending", "running"}
+            ),
+            None,
+        )
+
+    async def fail_stale_for_session(self, session_id, before):
+        stale = [
+            job
+            for job in self.jobs.values()
+            if job.session_id == session_id
+            and job.status in {"pending", "running"}
+            and job.created_at <= before
+        ]
+        for job in stale:
+            self.jobs[job.id] = job.model_copy(update={"status": "failed"})
+        return len(stale)
+
     async def append(self, job_id, event_type, payload):
         event = StreamEvent(
             job_id=job_id,

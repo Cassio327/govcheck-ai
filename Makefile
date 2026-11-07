@@ -5,7 +5,7 @@ EVAL_DIR := packages/evaluation
 API_PYTHON ?= $(if $(wildcard $(API_DIR)/.venv/bin/python),$(abspath $(API_DIR)/.venv/bin/python),python)
 EVAL_PYTHON ?= $(API_PYTHON)
 
-.PHONY: install test-api test-db test-retrieval lint-api smoke-embeddings check-openapi generate-contracts check-contracts test-web build-web eval-test eval-fake eval-live verify dev
+.PHONY: install test-api test-db test-retrieval lint-api smoke-embeddings check-openapi generate-contracts check-contracts test-web build-web eval-test eval-fake eval-live cleanup-expired verify dev
 
 install:
 	cd $(API_DIR) && python -m pip install -e '.[dev]'
@@ -65,6 +65,9 @@ eval-live:
 		--predictions-output results/live-predictions.json \
 		--output results/live-result.json \
 		--markdown-output ../../docs/evaluation-live.md
+
+cleanup-expired:
+	cd $(API_DIR) && $(API_PYTHON) -m govcheck.application.cleanup_expired
 
 verify: lint-api test-api check-contracts test-web build-web eval-test
 

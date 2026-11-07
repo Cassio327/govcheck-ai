@@ -52,6 +52,15 @@ class ChunkRecord(Base):
 
 class AnalysisJobRecord(Base):
     __tablename__ = "analysis_jobs"
+    __table_args__ = (
+        sa.Index(
+            "uq_analysis_jobs_active_session",
+            "session_id",
+            unique=True,
+            postgresql_where=sa.text("status IN ('pending', 'running')"),
+            sqlite_where=sa.text("status IN ('pending', 'running')"),
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(UUID_PK, primary_key=True, default=uuid4)
     document_id: Mapped[UUID] = mapped_column(

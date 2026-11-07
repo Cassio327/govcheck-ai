@@ -1,9 +1,11 @@
-from uuid import uuid4
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from govcheck.api.middleware.logging import log_security_event
+from govcheck.api.middleware.request_id import get_request_id
 from govcheck.domain.ingestion import IngestionError
 
 
@@ -15,12 +17,8 @@ class APIError(Exception):
         self.message = message
 
 
-def _request_id(request: Request) -> str:
-    return request.headers.get("X-Request-ID") or str(uuid4())
-
-
 def _response(request: Request, status_code: int, code: str, message: str) -> JSONResponse:
-    request_id = _request_id(request)
+    request_id = get_request_id(request)
     return JSONResponse(
         status_code=status_code,
         headers={"X-Request-ID": request_id},
@@ -55,4 +53,19 @@ def install_exception_handlers(app: FastAPI) -> None:
             422,
             "request_validation_error",
             "Os dados enviados não atendem ao contrato da API.",
+        )
+
+    @app.exception_handler(Exception)
+    async def unexpected_error_handler(request: Request, error: Exception) -> JSONResponse:
+        log_security_event(
+            "http.request.exception",
+            level=logging.ERROR,
+            request_id=get_request_id(request),
+            error_type=type(error).__name__,
+        )
+        return _response(
+            request,
+            500,
+            "internal_server_error",
+            "Ocorreu um erro interno. Tente novamente mais tarde.",
         )

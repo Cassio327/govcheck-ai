@@ -4,12 +4,14 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy import delete, func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from govcheck.domain.documents import AnalysisJob, Chunk, Document, Page
+from govcheck.domain.documents import AnalysisJob, Chunk, Document, Page, utc_now
 from govcheck.domain.events import StreamEvent
 from govcheck.domain.findings import Citation, Finding, ToolRun
+from govcheck.domain.repositories import ActiveAnalysisConflict
 from govcheck.infrastructure.db.models import (
     AnalysisJobRecord,
     ChunkRecord,
@@ -17,6 +19,7 @@ from govcheck.infrastructure.db.models import (
     DocumentRecord,
     FindingRecord,
     PageRecord,
+    ReportRecord,
     StreamEventRecord,
     ToolRunRecord,
 )
@@ -51,6 +54,7 @@ class SqlAlchemyDocumentRepository:
             select(DocumentRecord).where(
                 DocumentRecord.id == document_id,
                 DocumentRecord.session_id == session_id,
+                DocumentRecord.expires_at > utc_now(),
             )
         )
         if record is None:
@@ -70,8 +74,50 @@ class SqlAlchemyDocumentRepository:
         )
 
     async def delete_expired(self, before: datetime) -> int:
+        expired_ids = list(
+            (
+                await self._session.scalars(
+                    select(DocumentRecord.id).where(DocumentRecord.expires_at <= before)
+                )
+            ).all()
+        )
+        if not expired_ids:
+            return 0
+        job_ids = list(
+            (
+                await self._session.scalars(
+                    select(AnalysisJobRecord.id).where(
+                        AnalysisJobRecord.document_id.in_(expired_ids)
+                    )
+                )
+            ).all()
+        )
+        finding_ids = list(
+            (
+                await self._session.scalars(
+                    select(FindingRecord.id).where(FindingRecord.document_id.in_(expired_ids))
+                )
+            ).all()
+        )
+        if finding_ids:
+            await self._session.execute(
+                delete(CitationRecord).where(CitationRecord.finding_id.in_(finding_ids))
+            )
+        if job_ids:
+            await self._session.execute(
+                delete(StreamEventRecord).where(StreamEventRecord.job_id.in_(job_ids))
+            )
+        for model in (
+            ReportRecord,
+            ToolRunRecord,
+            FindingRecord,
+            AnalysisJobRecord,
+            ChunkRecord,
+            PageRecord,
+        ):
+            await self._session.execute(delete(model).where(model.document_id.in_(expired_ids)))
         result = await self._session.execute(
-            delete(DocumentRecord).where(DocumentRecord.expires_at < before)
+            delete(DocumentRecord).where(DocumentRecord.id.in_(expired_ids))
         )
         return int(result.rowcount or 0)
 
@@ -208,6 +254,10 @@ class SqlAlchemyEventRepository:
                 created_at=job.created_at,
             )
         )
+        try:
+            await self._session.flush()
+        except IntegrityError as error:
+            raise ActiveAnalysisConflict("session already has an active analysis") from error
 
     async def update_job_status(self, job_id: UUID, status: str) -> None:
         await self._session.execute(
@@ -281,6 +331,38 @@ class SqlAlchemyEventRepository:
             status=record.status,
             created_at=_aware(record.created_at),
         )
+
+    async def active_for_session(self, session_id: str) -> AnalysisJob | None:
+        record = await self._session.scalar(
+            select(AnalysisJobRecord)
+            .where(
+                AnalysisJobRecord.session_id == session_id,
+                AnalysisJobRecord.status.in_(("pending", "running")),
+            )
+            .order_by(AnalysisJobRecord.created_at, AnalysisJobRecord.id)
+            .limit(1)
+        )
+        if record is None:
+            return None
+        return AnalysisJob(
+            id=record.id,
+            document_id=record.document_id,
+            session_id=record.session_id,
+            status=record.status,
+            created_at=_aware(record.created_at),
+        )
+
+    async def fail_stale_for_session(self, session_id: str, before: datetime) -> int:
+        result = await self._session.execute(
+            update(AnalysisJobRecord)
+            .where(
+                AnalysisJobRecord.session_id == session_id,
+                AnalysisJobRecord.status.in_(("pending", "running")),
+                AnalysisJobRecord.created_at <= before,
+            )
+            .values(status="failed")
+        )
+        return int(result.rowcount or 0)
 
 
 class SqlAlchemyToolRunRepository:

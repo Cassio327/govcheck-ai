@@ -8,6 +8,10 @@ from govcheck.domain.events import StreamEvent
 from govcheck.domain.findings import Finding, ToolRun
 
 
+class ActiveAnalysisConflict(RuntimeError):
+    """Persistence rejected a second active job for one session."""
+
+
 class DocumentRepository(Protocol):
     async def add(self, document: Document, pages: Sequence[Page]) -> None: ...
 
@@ -46,6 +50,10 @@ class EventRepository(Protocol):
     async def latest_job_for_document(
         self, document_id: UUID, session_id: str
     ) -> AnalysisJob | None: ...
+
+    async def active_for_session(self, session_id: str) -> AnalysisJob | None: ...
+
+    async def fail_stale_for_session(self, session_id: str, before: datetime) -> int: ...
 
 
 class ToolRunRepository(Protocol):

@@ -80,7 +80,8 @@ def get_services() -> AppServices:
                 retriever=retriever,
                 llm_provider=llm_provider,
                 tool_registry=tool_registry,
-            )
+            ),
+            active_job_timeout_minutes=settings.analysis_job_timeout_minutes,
         ),
         report=RenderReport(unit_of_work_factory=unit_of_work_factory),
         max_upload_bytes=settings.max_upload_bytes,

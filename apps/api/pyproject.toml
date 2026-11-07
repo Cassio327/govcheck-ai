@@ -21,6 +21,9 @@ dependencies = [
   "uvicorn[standard]>=0.34,<1",
 ]
 
+[project.scripts]
+govcheck-cleanup = "govcheck.application.cleanup_expired:main"
+
 [project.optional-dependencies]
 embeddings = [
   "sentence-transformers>=3.3,<4",

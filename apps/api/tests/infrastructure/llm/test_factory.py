@@ -27,7 +27,7 @@ def test_factory_builds_lazy_ollama_provider() -> None:
 
 
 def test_factory_builds_lazy_groq_provider_without_exposing_secret() -> None:
-    secret = "gsk_do-not-print-this-value"
+    secret = "provider-key-do-not-print-this-value"
     provider = build_llm_provider(Settings(llm_provider="groq", groq_api_key=SecretStr(secret)))
 
     assert isinstance(provider, GroqLLMProvider)
