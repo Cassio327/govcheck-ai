@@ -46,7 +46,7 @@ class RunAnalysis:
         self._dependencies = dependencies
         self._graph = build_analysis_graph(dependencies)
 
-    async def execute(self, session_id: str, document_id: UUID) -> AnalysisJob:
+    async def start(self, session_id: str, document_id: UUID) -> AnalysisJob:
         job = AnalysisJob(document_id=document_id, session_id=session_id, status="running")
         async with self._dependencies.unit_of_work_factory() as unit_of_work:
             document = await unit_of_work.documents.get_owned(document_id, session_id)
@@ -55,11 +55,13 @@ class RunAnalysis:
             await unit_of_work.events.add_job(job)
             await unit_of_work.events.append(job.id, "analysis.started", {})
             await unit_of_work.commit()
+        return job
 
+    async def run(self, job: AnalysisJob) -> AnalysisJob:
         initial_state: AnalysisState = {
             "job_id": job.id,
-            "document_id": document_id,
-            "session_id": session_id,
+            "document_id": job.document_id,
+            "session_id": job.session_id,
             "evidence": [],
             "drafts": [],
             "validations": {},
@@ -72,6 +74,10 @@ class RunAnalysis:
             raise
         await self._finish(job.id, "completed", "analysis.completed")
         return job.model_copy(update={"status": "completed"})
+
+    async def execute(self, session_id: str, document_id: UUID) -> AnalysisJob:
+        job = await self.start(session_id, document_id)
+        return await self.run(job)
 
     async def _finish(self, job_id: UUID, status: str, event_type: str) -> None:
         async with self._dependencies.unit_of_work_factory() as unit_of_work:

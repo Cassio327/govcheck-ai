@@ -64,6 +64,17 @@ class SqlAlchemyDocumentRepository:
             expires_at=_aware(record.expires_at),
         )
 
+    async def update_status(self, document_id: UUID, status: str) -> None:
+        await self._session.execute(
+            update(DocumentRecord).where(DocumentRecord.id == document_id).values(status=status)
+        )
+
+    async def delete_expired(self, before: datetime) -> int:
+        result = await self._session.execute(
+            delete(DocumentRecord).where(DocumentRecord.expires_at < before)
+        )
+        return int(result.rowcount or 0)
+
     async def list_pages(self, document_id: UUID) -> list[Page]:
         records = (
             await self._session.scalars(
@@ -248,6 +259,28 @@ class SqlAlchemyEventRepository:
             )
             for record in records
         ]
+
+    async def latest_job_for_document(
+        self, document_id: UUID, session_id: str
+    ) -> AnalysisJob | None:
+        record = await self._session.scalar(
+            select(AnalysisJobRecord)
+            .where(
+                AnalysisJobRecord.document_id == document_id,
+                AnalysisJobRecord.session_id == session_id,
+            )
+            .order_by(AnalysisJobRecord.created_at.desc(), AnalysisJobRecord.id.desc())
+            .limit(1)
+        )
+        if record is None:
+            return None
+        return AnalysisJob(
+            id=record.id,
+            document_id=record.document_id,
+            session_id=record.session_id,
+            status=record.status,
+            created_at=_aware(record.created_at),
+        )
 
 
 class SqlAlchemyToolRunRepository:

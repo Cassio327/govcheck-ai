@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -11,6 +12,10 @@ class DocumentRepository(Protocol):
     async def add(self, document: Document, pages: Sequence[Page]) -> None: ...
 
     async def get_owned(self, document_id: UUID, session_id: str) -> Document | None: ...
+
+    async def update_status(self, document_id: UUID, status: str) -> None: ...
+
+    async def delete_expired(self, before: datetime) -> int: ...
 
     async def list_pages(self, document_id: UUID) -> list[Page]: ...
 
@@ -37,6 +42,10 @@ class EventRepository(Protocol):
     ) -> StreamEvent: ...
 
     async def list_after(self, job_id: UUID, sequence: int) -> list[StreamEvent]: ...
+
+    async def latest_job_for_document(
+        self, document_id: UUID, session_id: str
+    ) -> AnalysisJob | None: ...
 
 
 class ToolRunRepository(Protocol):
