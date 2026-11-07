@@ -4,9 +4,9 @@ from uuid import UUID, uuid4
 
 from pydantic import Field
 
+from govcheck.domain.analysis import FindingCategory
 from govcheck.domain.documents import DomainModel, utc_now
 
-FindingCategory = Literal["deadline", "document", "value", "criterion", "sanction", "obligation"]
 EvidenceStatus = Literal["supported", "unsupported", "conflicting"]
 
 

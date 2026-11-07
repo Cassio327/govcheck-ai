@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -130,7 +130,7 @@ class SqlAlchemyFindingRepository:
             record = FindingRecord(
                 id=finding.id,
                 document_id=finding.document_id,
-                category=finding.category,
+                category=finding.category.value,
                 title=finding.title,
                 value=finding.value,
                 evidence_status=finding.evidence_status,
@@ -195,6 +195,11 @@ class SqlAlchemyEventRepository:
                 status=job.status,
                 created_at=job.created_at,
             )
+        )
+
+    async def update_job_status(self, job_id: UUID, status: str) -> None:
+        await self._session.execute(
+            update(AnalysisJobRecord).where(AnalysisJobRecord.id == job_id).values(status=status)
         )
 
     async def append(self, job_id: UUID, event_type: str, payload: dict[str, Any]) -> StreamEvent:
