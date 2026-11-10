@@ -221,3 +221,39 @@ async def test_chat_stream_emits_text_then_a_validated_terminal_answer() -> None
     assert deltas[-1].type == "done"
     assert deltas[-1].answer is not None
     assert deltas[-1].answer.grounded is True
+
+
+@pytest.mark.asyncio
+async def test_chat_history_evicts_least_recent_session() -> None:
+    document = make_document()
+    service = make_service(
+        document, StubRetriever([]), FakeLLMProvider(), max_history_sessions=1
+    )
+
+    await service.execute("session-a", document.id, "Primeira pergunta")
+    assert ("session-a", document.id) in service._history
+
+    another = document.model_copy(update={"session_id": "session-b"})
+    service._unit_of_work_factory = lambda: ChatUnitOfWork(ChatDocumentRepository(another))
+    await service.execute("session-b", document.id, "Outra pergunta")
+
+    assert ("session-a", document.id) not in service._history
+    assert ("session-b", document.id) in service._history
+
+
+@pytest.mark.asyncio
+async def test_chat_history_expires_idle_entries(monkeypatch) -> None:
+    from govcheck.application import chat_with_document
+
+    clock = [100.0]
+    monkeypatch.setattr(chat_with_document, "monotonic", lambda: clock[0])
+    document = make_document()
+    service = make_service(
+        document, StubRetriever([]), FakeLLMProvider(), history_ttl_seconds=30
+    )
+
+    await service.execute("session-a", document.id, "Pergunta antiga")
+    assert len(service._history) == 1
+    clock[0] += 31
+    assert len(service._get_history("session-a", document.id)) == 0
+    assert len(service._history) == 1
