@@ -1,7 +1,6 @@
 import html
 import re
-from collections import deque
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from collections.abc import AsyncIterator, Callable, Sequence
 from importlib import resources
 from time import monotonic
