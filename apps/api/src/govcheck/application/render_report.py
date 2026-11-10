@@ -6,12 +6,16 @@ from uuid import UUID
 from govcheck.domain.documents import utc_now
 from govcheck.domain.repositories import UnitOfWork
 
+
 def _markdown_text(value: str) -> str:
     """Escape document and model text before inserting it into Markdown."""
     normalized = " ".join(value.split())
     special = "\\`*_{}[]()#+-.!|>~"
-    escaped = "".join("\\" + character if character in special else character for character in normalized)
+    escaped = "".join(
+        "\\" + character if character in special else character for character in normalized
+    )
     return html.escape(escaped, quote=False)
+
 
 RESPONSIBLE_USE = (
     "Esta análise é preliminar, pode conter limitações e não substitui parecer jurídico."
