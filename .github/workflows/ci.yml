@@ -73,6 +73,15 @@ jobs:
       - name: Test reviewer flow
         run: pnpm --dir apps/web test:e2e
 
+  container-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+      - name: Build reviewer-ready service images
+        run: docker compose build api web
+
   evaluation:
     runs-on: ubuntu-latest
     steps:
