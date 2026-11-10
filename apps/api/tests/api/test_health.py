@@ -2,7 +2,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 
-from govcheck.config import Settings
+from govcheck.config import Settings, get_settings
 from govcheck.main import app
 
 
@@ -17,8 +17,12 @@ async def test_health_returns_ok() -> None:
 
 @pytest.mark.asyncio
 async def test_ready_reports_missing_database() -> None:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        response = await client.get("/ready")
+    app.dependency_overrides[get_settings] = lambda: Settings(database_url=None)
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get("/ready")
+    finally:
+        app.dependency_overrides.pop(get_settings, None)
 
     assert response.status_code == 503
     assert response.json() == {"status": "not_ready", "checks": {"database": "missing"}}
@@ -33,7 +37,6 @@ def test_settings_reject_production_without_database_url() -> None:
 async def test_ready_requires_migrated_schema(tmp_path) -> None:
     from sqlalchemy.ext.asyncio import create_async_engine
 
-    from govcheck.config import get_settings
     from govcheck.infrastructure.db import models  # noqa: F401
     from govcheck.infrastructure.db.base import Base
 
