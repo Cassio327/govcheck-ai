@@ -10,7 +10,7 @@ from govcheck.domain.repositories import UnitOfWork
 def _markdown_text(value: str) -> str:
     """Escape document and model text before inserting it into Markdown."""
     normalized = " ".join(value.split())
-    special = "\\`*_{}[]()#+-.!|>~"
+    special = "\\`*_{}[]()#+-.!|~"
     escaped = "".join(
         "\\" + character if character in special else character for character in normalized
     )
