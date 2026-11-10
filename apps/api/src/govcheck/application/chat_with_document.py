@@ -1,8 +1,10 @@
 import html
 import re
-from collections import defaultdict, deque
+from collections import deque
+from collections import OrderedDict
 from collections.abc import AsyncIterator, Callable, Sequence
 from importlib import resources
+from time import monotonic
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -42,18 +44,25 @@ class ChatWithDocument:
         llm_provider: LLMProvider,
         retrieval_limit: int = 8,
         max_history_messages: int = 6,
+        max_history_sessions: int = 1_000,
+        history_ttl_seconds: int = 3_600,
     ) -> None:
         if retrieval_limit <= 0:
             raise ValueError("retrieval_limit must be greater than zero")
         if max_history_messages < 0:
             raise ValueError("max_history_messages must not be negative")
+        if max_history_sessions <= 0 or history_ttl_seconds <= 0:
+            raise ValueError("history limits must be positive")
         self._unit_of_work_factory = unit_of_work_factory
         self._retriever = retriever
         self._llm_provider = llm_provider
         self._retrieval_limit = retrieval_limit
-        self._history: dict[tuple[str, UUID], deque[tuple[str, str]]] = defaultdict(
-            lambda: deque(maxlen=max_history_messages)
-        )
+        self._history: OrderedDict[
+            tuple[str, UUID], tuple[float, deque[tuple[str, str]]]
+        ] = OrderedDict()
+        self._max_history_messages = max_history_messages
+        self._max_history_sessions = max_history_sessions
+        self._history_ttl_seconds = history_ttl_seconds
         self._system_prompt = f"{_prompt('chat_system.md')}\n\n{_prompt('chat_answer.md')}"
 
     async def execute(
@@ -138,7 +147,7 @@ class ChatWithDocument:
         question: str,
         evidence: Sequence[Evidence],
     ) -> str:
-        history = self._history[(session_id, document_id)]
+        history = self._get_history(session_id, document_id)
         history_xml = "\n".join(
             f'<message role="{role}">{html.escape(content)}</message>' for role, content in history
         )
@@ -166,9 +175,23 @@ class ChatWithDocument:
         question: str,
         answer: str,
     ) -> None:
-        history = self._history[(session_id, document_id)]
+        history = self._get_history(session_id, document_id)
         history.append(("user", question))
         history.append(("assistant", answer))
+
+    def _get_history(self, session_id: str, document_id: UUID) -> deque[tuple[str, str]]:
+        """Bound conversation state by session count and idle lifetime."""
+        now = monotonic()
+        for key, (last_access, _) in list(self._history.items()):
+            if now - last_access >= self._history_ttl_seconds:
+                del self._history[key]
+        key = (session_id, document_id)
+        entry = self._history.pop(key, None)
+        history = entry[1] if entry is not None else deque(maxlen=self._max_history_messages)
+        self._history[key] = (now, history)
+        while len(self._history) > self._max_history_sessions:
+            self._history.popitem(last=False)
+        return history
 
     @staticmethod
     def _not_found() -> ChatAnswer:
