@@ -8,13 +8,16 @@ FROM dependencies AS build
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY . .
-RUN pnpm build
+# The app currently has no tracked static assets. Keep the image reproducible
+# when the optional public directory is absent from the repository.
+RUN mkdir -p public && pnpm build
 
 FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/public ./public
+COPY --chown=node:node --from=build /app/.next/standalone ./
+COPY --chown=node:node --from=build /app/.next/static ./.next/static
+COPY --chown=node:node --from=build /app/public ./public
+USER node
 EXPOSE 3000
 CMD ["node", "server.js"]
