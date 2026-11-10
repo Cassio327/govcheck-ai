@@ -1,9 +1,17 @@
+import html
 from collections.abc import Callable
 from dataclasses import dataclass
 from uuid import UUID
 
 from govcheck.domain.documents import utc_now
 from govcheck.domain.repositories import UnitOfWork
+
+def _markdown_text(value: str) -> str:
+    """Escape document and model text before inserting it into Markdown."""
+    normalized = " ".join(value.split())
+    special = "\\`*_{}[]()#+-.!|>~"
+    escaped = "".join("\\" + character if character in special else character for character in normalized)
+    return html.escape(escaped, quote=False)
 
 RESPONSIBLE_USE = (
     "Esta análise é preliminar, pode conter limitações e não substitui parecer jurídico."
@@ -85,7 +93,7 @@ class RenderReport:
         lines = [
             "# Relatório GovCheck AI",
             "",
-            f"**Documento:** {document.filename}",
+            f"**Documento:** {_markdown_text(document.filename)}",
             f"**Gerado em:** {generated_at.isoformat()}",
             "",
             f"> {RESPONSIBLE_USE}",
@@ -98,15 +106,15 @@ class RenderReport:
             lines.extend(
                 [
                     "",
-                    f"### {finding.title}",
+                    f"### {_markdown_text(finding.title)}",
                     f"- Categoria: `{finding.category.value}`",
-                    f"- Valor interpretado: {finding.value}",
+                    f"- Valor interpretado: {_markdown_text(finding.value)}",
                     f"- Evidência: `{finding.evidence_status}`",
                     f"- Confiança: {finding.confidence:.0%}",
                 ]
             )
             for citation in finding.citations:
-                lines.append(f"- Página {citation.page_number}: “{citation.excerpt}”")
+                lines.append(f"- Página {citation.page_number}: “{_markdown_text(citation.excerpt)}”")
         lines.extend(["", "## Verificações em fonte pública"])
         if not tool_runs:
             lines.extend(["", "Nenhuma verificação externa foi solicitada."])
@@ -115,7 +123,7 @@ class RenderReport:
                 [
                     "",
                     f"- `{run.name}` — `{run.status}`",
-                    f"  - Fonte: {run.source_url or 'indisponível'}",
+                    f"  - Fonte: {_markdown_text(run.source_url or 'indisponível')}",
                     f"  - Verificado em: {run.checked_at.isoformat()}",
                 ]
             )
