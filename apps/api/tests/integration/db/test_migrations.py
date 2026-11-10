@@ -8,7 +8,10 @@ from alembic.config import Config
 from sqlalchemy import create_engine, inspect, text
 
 
-def test_initial_migration_creates_complete_persistence_schema(tmp_path: Path) -> None:
+def test_initial_migration_creates_complete_persistence_schema(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     security_logger = logging.getLogger("govcheck.security")
     security_logger.disabled = False
     database_path = tmp_path / "migration.db"
@@ -45,7 +48,9 @@ def test_initial_migration_creates_complete_persistence_schema(tmp_path: Path) -
 
 def test_active_job_migration_fails_closed_for_preexisting_running_jobs(
     tmp_path: Path,
+    monkeypatch,
 ) -> None:
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     database_path = tmp_path / "preexisting-jobs.db"
     config = Config("alembic.ini")
     config.set_main_option("script_location", "migrations")
