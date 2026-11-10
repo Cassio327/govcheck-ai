@@ -118,7 +118,9 @@ class RenderReport:
                 ]
             )
             for citation in finding.citations:
-                lines.append(f"- Página {citation.page_number}: “{_markdown_text(citation.excerpt)}”")
+                lines.append(
+                    f"- Página {citation.page_number}: “{_markdown_text(citation.excerpt)}”"
+                )
         lines.extend(["", "## Verificações em fonte pública"])
         if not tool_runs:
             lines.extend(["", "Nenhuma verificação externa foi solicitada."])
