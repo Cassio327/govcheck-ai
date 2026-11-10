@@ -34,8 +34,8 @@ async def test_ready_requires_migrated_schema(tmp_path) -> None:
     from sqlalchemy.ext.asyncio import create_async_engine
 
     from govcheck.config import get_settings
-    from govcheck.infrastructure.db.base import Base
     from govcheck.infrastructure.db import models  # noqa: F401
+    from govcheck.infrastructure.db.base import Base
 
     database_url = f"sqlite+aiosqlite:///{tmp_path / 'ready.db'}"
     app.dependency_overrides[get_settings] = lambda: Settings(database_url=database_url)
