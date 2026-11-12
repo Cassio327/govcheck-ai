@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 import pytest
 
-from govcheck.application.ingest_document import IngestDocument
+from govcheck.application.ingest_document import IngestDocument, safe_document_filename
 from govcheck.domain.documents import Document, Page
 from govcheck.domain.ingestion import IngestionError, PdfPolicy
 from govcheck.infrastructure.pdf.extractor import PdfExtractor
@@ -77,3 +77,25 @@ async def test_ingest_document_does_not_open_transaction_for_invalid_pdf() -> No
         await service.execute("session-a", "corrupt.pdf", b"not-a-pdf")
 
     assert factory_calls == 0
+
+
+@pytest.mark.parametrize(
+    ("submitted", "expected"),
+    [
+        ("C:\\\\Users\\\\demo\\\\edital.pdf", "edital.pdf"),
+        ("../../privado.pdf", "privado.pdf"),
+        ("<script>.pdf", "script.pdf"),
+        (" \u0000\u0007 ", "documento.pdf"),
+        ("relatório.pdf", "relatório.pdf"),
+    ],
+)
+def test_safe_document_filename_removes_paths_and_control_characters(
+    submitted: str, expected: str
+) -> None:
+    assert safe_document_filename(submitted) == expected
+
+
+def test_safe_document_filename_preserves_pdf_suffix_when_truncated() -> None:
+    result = safe_document_filename("nome" * 90 + ".pdf")
+    assert len(result) == 255
+    assert result.endswith(".pdf")
