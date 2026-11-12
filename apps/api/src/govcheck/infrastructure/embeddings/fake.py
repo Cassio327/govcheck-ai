@@ -22,6 +22,9 @@ class FakeEmbeddingProvider:
             return [vector.copy() for vector in self._forced_vectors]
         return [self._embed(text) for text in texts]
 
+    async def embed_query(self, text: str) -> list[float]:
+        return (await self.embed_documents([text]))[0]
+
     def _embed(self, text: str) -> list[float]:
         digest = hashlib.sha256(text.encode("utf-8")).digest()
         vector = [
