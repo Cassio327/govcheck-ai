@@ -8,7 +8,42 @@ from govcheck.domain.analysis import ExternalValidation, FindingDraft
 from govcheck.domain.findings import Citation, Finding
 from govcheck.domain.llm import ChatMessage
 
-ANALYSIS_QUERY = "prazos documentos valores critérios de julgamento sanções e obrigações do edital"
+# Different procurement sections often occur on distant pages. A single broad
+# query tends to over-represent the opening pages and overlook narrow clauses.
+ANALYSIS_QUERIES = (
+    "prazo datas sessão pública envio propostas cronograma",
+    "documentos de habilitação qualificação certidões atestados",
+    "valor estimado orçamento preço total pagamento",
+    "critério julgamento adjudicação menor preço técnica",
+    "sanções multa penalidade atraso impedimento",
+    "obrigações execução contratual entrega fiscalização",
+)
+ANALYSIS_EVIDENCE_LIMIT = 20
+
+
+async def _collect_analysis_evidence(
+    dependencies: AnalysisDependencies,
+    document_id,
+):
+    """Round-robin merge of category retrievals; never mix document indexes."""
+    batches = [
+        await dependencies.retriever.search(document_id, query, 4)
+        for query in ANALYSIS_QUERIES
+    ]
+    selected = []
+    seen = set()
+    for offset in range(4):
+        for batch in batches:
+            if offset >= len(batch):
+                continue
+            item = batch[offset]
+            if item.document_id != document_id or item.chunk_id in seen:
+                continue
+            selected.append(item)
+            seen.add(item.chunk_id)
+            if len(selected) >= ANALYSIS_EVIDENCE_LIMIT:
+                return selected
+    return selected
 
 
 class ExtractedFindings(BaseModel):
@@ -48,12 +83,7 @@ async def _record_event(
 
 def build_nodes(dependencies: AnalysisDependencies):
     async def extract(state: AnalysisState) -> dict[str, object]:
-        retrieved = await dependencies.retriever.search(
-            state["document_id"],
-            ANALYSIS_QUERY,
-            20,
-        )
-        evidence = [item for item in retrieved if item.document_id == state["document_id"]]
+        evidence = await _collect_analysis_evidence(dependencies, state["document_id"])
         drafts: list[FindingDraft] = []
         if evidence:
             source_xml = "\n".join(
