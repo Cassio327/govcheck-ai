@@ -51,7 +51,7 @@ async def _collect_analysis_evidence(
 class ExtractedFindings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    findings: list[FindingDraft] = Field(default_factory=list)
+    findings: list[FindingDraft] = Field(default_factory=list, max_length=20)
 
 
 class CriticDecision(BaseModel):
@@ -65,7 +65,7 @@ class CriticDecision(BaseModel):
 class CriticDecisions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    decisions: list[CriticDecision] = Field(default_factory=list)
+    decisions: list[CriticDecision] = Field(default_factory=list, max_length=20)
 
 
 def _prompt(name: str) -> str:
