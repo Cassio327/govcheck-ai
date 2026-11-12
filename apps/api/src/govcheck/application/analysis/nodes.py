@@ -1,9 +1,11 @@
 import html
 from importlib import resources
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from govcheck.application.analysis.state import AnalysisDependencies, AnalysisState
+from govcheck.application.retrieve_evidence import Evidence
 from govcheck.domain.analysis import ExternalValidation, FindingDraft
 from govcheck.domain.findings import Citation, Finding
 from govcheck.domain.llm import ChatMessage
@@ -23,15 +25,15 @@ ANALYSIS_EVIDENCE_LIMIT = 20
 
 async def _collect_analysis_evidence(
     dependencies: AnalysisDependencies,
-    document_id,
-):
+    document_id: UUID,
+) -> list[Evidence]:
     """Round-robin merge of category retrievals; never mix document indexes."""
     batches = [
         await dependencies.retriever.search(document_id, query, 4)
         for query in ANALYSIS_QUERIES
     ]
-    selected = []
-    seen = set()
+    selected: list[Evidence] = []
+    seen: set[UUID] = set()
     for offset in range(4):
         for batch in batches:
             if offset >= len(batch):
