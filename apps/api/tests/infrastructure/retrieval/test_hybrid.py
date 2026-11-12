@@ -13,8 +13,11 @@ class StubEmbeddingProvider:
         self.calls = 0
 
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
-        self.calls += 1
         return [self.vector.copy() for _ in texts]
+
+    async def embed_query(self, text: str) -> list[float]:
+        self.calls += 1
+        return self.vector.copy()
 
 
 class ChunkRepository:
@@ -162,3 +165,20 @@ async def test_hybrid_search_bounds_long_excerpts() -> None:
 
     assert len(evidence[0].excerpt) <= 120
     assert evidence[0].excerpt.endswith("…")
+
+
+@pytest.mark.asyncio
+async def test_hybrid_rejects_query_vector_dimension_mismatch() -> None:
+    from govcheck.infrastructure.retrieval.hybrid import QueryEmbeddingError
+
+    document_id = uuid4()
+    repository = ChunkRepository(
+        [make_chunk(document_id, ordinal=0, page=1, text="Prazo", embedding=[1.0, 0.0])]
+    )
+    retriever = HybridRetriever(
+        unit_of_work_factory=lambda: RetrievalUnitOfWork(repository),
+        embedding_provider=StubEmbeddingProvider([1.0]),
+    )
+
+    with pytest.raises(QueryEmbeddingError, match="dimension"):
+        await retriever.search(document_id, "prazo")
