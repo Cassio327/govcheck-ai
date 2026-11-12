@@ -13,7 +13,7 @@
 [![CI](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Next.js-183153?logo=typescript&logoColor=white)
-![License](https://img.shields.io/badge/status-portfolio%20MVP-205D4B)
+![Status](https://img.shields.io/badge/status-portfolio%20MVP-205D4B)
 
 </div>
 
@@ -106,7 +106,7 @@ O repositório inclui testes da API e domínio, migrações reais em PostgreSQL,
 
 A avaliação versionada possui **três documentos de referência, 15 perguntas e 15 campos anotados**. A fixture reproduzível verifica o funcionamento das métricas, mas seus números **não são acurácia de um modelo real**. Resultados de Groq/Ollama precisam ser coletados e revisados separadamente.
 
-[Metodologia e resultados de teste](docs/evaluation.md) · [Modelo de ameaça](docs/threat-model.md)
+[Metodologia e resultados de teste](docs/evaluation.md) · [Modelo de ameaça](docs/threat-model.md) · [Contribuição](CONTRIBUTING.md) · [Segurança](SECURITY.md)
 
 ## 📂 Organização do código
 
