@@ -16,6 +16,7 @@ from govcheck.api.middleware.logging import (
 from govcheck.api.middleware.request_id import RequestIdMiddleware
 from govcheck.api.routes.analysis import run_analysis_in_background
 from govcheck.domain.documents import AnalysisJob
+from govcheck.domain.llm import LLMProviderError
 
 
 def test_redaction_removes_nested_secrets_document_content_and_binary_data() -> None:
@@ -167,3 +168,33 @@ def test_production_logging_keeps_security_events_and_disables_access_logs() -> 
     }
     assert '"--log-config", "logging.json"' in dockerfile
     assert '"--no-access-log"' in dockerfile
+
+
+@pytest.mark.asyncio
+async def test_background_logs_only_safe_groq_failure_metadata(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class FailedProvider:
+        async def run(self, job: AnalysisJob) -> None:
+            del job
+            raise LLMProviderError(
+                "Provider could not process private document",
+                code="rate_limited",
+                status_code=429,
+            )
+
+    caplog.set_level(logging.ERROR, logger="govcheck.security")
+    await run_analysis_in_background(
+        FailedProvider(),
+        AnalysisJob(document_id=UUID(int=1), session_id="secret-session"),
+    )
+
+    payload = json.loads(caplog.records[-1].message)
+    assert payload == {
+        "error_type": "LLMProviderError",
+        "event": "analysis.background.failed",
+        "provider_error_code": "rate_limited",
+        "provider_status": 429,
+    }
+    assert "private document" not in caplog.text
+    assert "secret-session" not in caplog.text

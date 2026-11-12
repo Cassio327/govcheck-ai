@@ -33,6 +33,8 @@ ALLOWED_LOG_FIELDS = frozenset(
         "duration_ms",
         "error_type",
         "method",
+        "provider_error_code",
+        "provider_status",
         "request_id",
         "route",
         "status_code",
