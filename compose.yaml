@@ -38,7 +38,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://govcheck:${POSTGRES_PASSWORD:-govcheck}@postgres:5432/govcheck
       LLM_PROVIDER: ${LLM_PROVIDER:-fake}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
-      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
       OLLAMA_BASE_URL: http://ollama:11434
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-fake}
