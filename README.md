@@ -11,7 +11,7 @@ GovCheck AI turns a text-based *edital* into a structured, reviewable workspace.
 | Capability | What it does | Boundary |
 | --- | --- | --- |
 | PDF ingestion | Validates text PDFs (up to 5 MiB / 50 pages), extracts pages, builds isolated chunks | Scanned PDFs need OCR before upload |
-| Evidence-first RAG | Combines lexical BM25 and embedding rankings with reciprocal rank fusion | Evidence is scoped to the uploaded document; citations are checked against retrieved chunks |
+| Evidence-first RAG | Combines lexical BM25 and embedding rankings with reciprocal rank fusion; six focused queries improve category coverage | Evidence is scoped to the uploaded document; citations are checked against retrieved chunks |
 | Multi-stage analysis | LangGraph: extraction → allowlisted external check → evidence critic → synthesis | Agent judgements are fallible and require review |
 | Public-data verification | Checks a PNCP procurement identifier using a constrained HTTP tool | Unavailable/invalid checks are never reported as verified |
 | Document chat | Answers questions and displays page citations or an explicit no-evidence response | Does not guarantee that cited passages fully establish a claim |
@@ -35,7 +35,7 @@ flowchart LR
 
 The API uses application/domain/infrastructure boundaries. Analysis persists events for resumable polling over SSE; findings retain evidence states (`supported`, `unsupported`, `conflicting`). Detailed boundaries are in [Architecture](docs/architecture.md), [Threat model](docs/threat-model.md), and [Evaluation](docs/evaluation.md).
 
-**Stack:** Python 3.12, FastAPI, Pydantic, SQLAlchemy, Alembic, PostgreSQL/pgvector, LangGraph, PyMuPDF, Next.js, React, TypeScript, pnpm, Vitest, Playwright, pytest, Docker Compose, GitHub Actions.
+For multilingual E5 retrieval, the adapter prefixes indexed text with `passage: ` and queries with `query: `. The retrieval ranking currently happens in application memory after document filtering; pgvector is used for storage, not approximate-nearest-neighbor search. The analysis context is bounded to 20 distinct source chunks. These are engineering choices, **not** proven accuracy gains without an evaluation run.\n\n**Stack:** Python 3.12, FastAPI, Pydantic, SQLAlchemy, Alembic, PostgreSQL/pgvector, LangGraph, PyMuPDF, Next.js, React, TypeScript, pnpm, Vitest, Playwright, pytest, Docker Compose, GitHub Actions.
 
 ## Quick start: interface and deterministic infrastructure
 
