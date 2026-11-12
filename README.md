@@ -23,7 +23,13 @@
 
 ## 🎬 Demonstração
 
-**[Ver a página de demonstração e roteiro](docs/demo.md)** — o espaço para o vídeo real já está preparado. A gravação será publicada depois da revisão dos resultados com um PDF oficial.
+**[🎬 Demonstração técnica — vídeo real](docs/demo.md)** · [Área de publicação do MP4](https://github.com/Cassio327/govcheck-ai/issues/3)
+
+Gravação realizada em **12/11/2026**, com um aviso oficial de contratação,
+Groq e RAG híbrido. A versão editada (Full HD, aproximadamente 2 minutos,
+sem áudio e com legendas) já está preparada; **a anexação do arquivo ao GitHub
+ainda está pendente**. As cenas mostram execução real — não o exemplo fictício
+da interface.
 
 | Fluxo | O que observar |
 | --- | --- |
