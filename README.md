@@ -1,134 +1,150 @@
+<div align="center">
+
 # GovCheck AI
 
-**Evidence-first AI assistant for reviewing Brazilian public procurement notices.**
+### Análise de editais públicos com IA e evidências rastreáveis
 
-GovCheck AI turns a text-based *edital* into a structured, reviewable workspace. It extracts deadlines, required documents, estimated values, evaluation criteria, sanctions, and obligations; shows page-level evidence; checks compatible public identifiers against the PNCP; and exports a traceable report.
+**Evidence-first AI for Brazilian public procurement documents.**
 
-> **Important:** This is a portfolio prototype for preliminary document review, **not** a legal-compliance certification or legal advice. Findings require human verification.
+`FastAPI` · `LangGraph` · `RAG híbrido` · `Groq / Ollama` · `Next.js` · `PostgreSQL + pgvector`
 
-## What you can try
+[**▶ Demonstração**](docs/demo.md) · [**Arquitetura**](docs/architecture.md) · [**Decisões técnicas**](docs/decisoes-de-engenharia.md) · [**Executar no Linux**](docs/execucao-linux.md)
 
-| Capability | What it does | Boundary |
-| --- | --- | --- |
-| PDF ingestion | Validates text PDFs (up to 5 MiB / 50 pages), extracts pages, builds isolated chunks | Scanned PDFs need OCR before upload |
-| Evidence-first RAG | Combines lexical BM25 and embedding rankings with reciprocal rank fusion; six focused queries improve category coverage | Evidence is scoped to the uploaded document; citations are checked against retrieved chunks |
-| Multi-stage analysis | LangGraph: extraction → allowlisted external check → evidence critic → synthesis | Agent judgements are fallible and require review |
-| Public-data verification | Checks a PNCP procurement identifier using a constrained HTTP tool | Unavailable/invalid checks are never reported as verified |
-| Document chat | Answers questions and displays page citations or an explicit no-evidence response | Does not guarantee that cited passages fully establish a claim |
-| Report export | Markdown or JSON report with findings, citations, and external-validation provenance | Preliminary, nonbinding report |
-| Review UI | Responsive reviewer workspace, progress replay, category filters, accessible statuses | Example document is fictional UI data and **not** an analyzed PDF |
+[![CI](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-Next.js-183153?logo=typescript&logoColor=white)
+![License](https://img.shields.io/badge/status-portfolio%20MVP-205D4B)
 
-## Architecture
+</div>
+
+---
+
+> **Por que este projeto existe?** Editais e avisos de contratação concentram datas, exigências de habilitação, critérios de julgamento e obrigações em documentos extensos. Um resumo sem fontes pode ocultar cláusulas ou induzir a erros. O GovCheck AI foi construído para **encontrar informações, organizar achados e mostrar de onde cada afirmação veio**, sem substituir a revisão humana.
+
+## 🎬 Demonstração
+
+**[Ver a página de demonstração e roteiro](docs/demo.md)** — o espaço para o vídeo real já está preparado. A gravação será publicada depois da revisão dos resultados com um PDF oficial.
+
+| Fluxo | O que observar |
+| --- | --- |
+| **Upload** | PDF textual com leitura e indexação por página (até 5 MiB e 50 páginas) |
+| **Análise estruturada** | Prazos, documentos, valores, critérios, sanções e obrigações |
+| **Evidências** | Trechos recuperados, número da página e indicação de suporte ou conflito |
+| **Chat com RAG** | Perguntas sobre o documento, respostas com citações ou insuficiência de evidências |
+| **Relatório** | Exportação Markdown/JSON com achados e proveniência das validações |
+
+> O botão **“Usar edital de exemplo”** carrega dados *fictícios para demonstrar a interface*. Não é uma execução de um LLM. Para observar a análise real, configure Groq ou Ollama e envie um PDF público.
+
+## 🧠 Como funciona
 
 ```mermaid
 flowchart LR
-    UI[Next.js reviewer workspace] --> API[FastAPI]
-    API --> PDF[PyMuPDF ingestion]
-    PDF --> DB[(PostgreSQL + pgvector)]
-    API --> RAG[Hybrid BM25 + embeddings]
-    RAG --> GRAPH[LangGraph analysis]
-    GRAPH --> LLM[LLM provider]
-    GRAPH --> PNCP[Allowlisted PNCP API]
-    GRAPH --> DB
-    DB --> UI
+  U["Revisor<br/>Next.js"] --> API["API + eventos SSE<br/>FastAPI"]
+  API --> P["PDF textual<br/>PyMuPDF"]
+  P --> DB[("PostgreSQL<br/>pgvector")]
+  DB --> R["RAG híbrido<br/>BM25 + embeddings E5"]
+  R --> EX["Extração tipada<br/>LangGraph"]
+  EX --> V["Validação opcional<br/>PNCP"]
+  V --> C["Crítica de evidências"]
+  C --> S["Síntese e relatório"]
+  S --> API
+  EX -.-> L["LLM<br/>Groq / Ollama"]
+  C -.-> L
 ```
 
-The API uses application/domain/infrastructure boundaries. Analysis persists events for resumable polling over SSE; findings retain evidence states (`supported`, `unsupported`, `conflicting`). Start with the [reviewer demonstration guide](docs/reviewer-demo.md) for an honest, reproducible walkthrough. For Linux, use the [Linux setup and real-model walkthrough (Portuguese)](docs/execucao-linux.md). For Windows, follow the [Portuguese LLM validation walkthrough](docs/validacao-llm-real.md). Detailed boundaries are in [Architecture](docs/architecture.md), [Threat model](docs/threat-model.md), and [Evaluation](docs/evaluation.md).
+**1. Indexação e recuperação.** O PDF é separado em páginas e chunks. A busca combina BM25 e similaridade semântica via RRF. A análise faz seis consultas focadas em categorias, deduplica resultados e limita o contexto a 20 trechos por documento.
 
-For multilingual E5 retrieval, the adapter prefixes indexed text with `passage: ` and queries with `query: `. The retrieval ranking currently happens in application memory after document filtering; pgvector is used for storage, not approximate-nearest-neighbor search. The analysis context is bounded to 20 distinct source chunks. These are engineering choices, **not** proven accuracy gains without an evaluation run.
+**2. Workflow especializado.** Os nós do LangGraph executam extração, validação externa quando aplicável, crítica de evidências e síntese. Os dados gerados pelo LLM passam por contratos Pydantic com limites explícitos.
 
-**Stack:** Python 3.12, FastAPI, Pydantic, SQLAlchemy, Alembic, PostgreSQL/pgvector, LangGraph, PyMuPDF, Next.js, React, TypeScript, pnpm, Vitest, Playwright, pytest, Docker Compose, GitHub Actions.
+**3. Rastreabilidade.** Cada achado relaciona a interpretação a fontes do PDF e recebe um estado: `supported`, `unsupported` ou `conflicting`. A verificação no PNCP usa URLs e campos permitidos, sem aceitar destinos arbitrários fornecidos pelo modelo.
 
-## Quick start: interface and deterministic infrastructure
+**4. Conversação e exportação.** O chat recupera fontes do documento selecionado e exige citações válidas; o usuário pode exportar os resultados e conferir o original.
 
-Prerequisite: Docker Desktop / Docker Engine with Compose.
+**Decisões e tradeoffs:** [por que RAG, como o crítico funciona e quais são os limites atuais](docs/decisoes-de-engenharia.md).
+
+## 🚀 Executar localmente
+
+Requisitos: **Git + Docker Engine + Docker Compose v2**. A versão recomendada é Linux (Ubuntu), mas os serviços são containerizados.
 
 ```bash
 git clone https://github.com/Cassio327/govcheck-ai.git
 cd govcheck-ai
-git switch feature/govcheck-mvp
-docker compose up --build
+cp .env.example .env
+nano .env
+docker compose up --build -d
+docker compose ps
 ```
 
-Open **http://localhost:3000** (UI) or **http://localhost:8000/docs** (API). To demonstrate the interface without a real edital or LLM, select **Usar edital de exemplo**. This loads **fictional, hard-coded UI fixtures**, including citations and conversations; it does not invoke the extraction pipeline.
+Configure no arquivo `.env` antes do primeiro teste com IA real:
 
-The default Docker Compose configuration uses `LLM_PROVIDER=fake` and `EMBEDDING_PROVIDER=fake`, suitable for automated tests and infrastructure smoke checks only. **Uploading a document in this default configuration is not a meaningful real-model demonstration**: the fake LLM is a contract stub, not a document analyst. For actual extraction and document chat, configure a real model as below.
-
-To stop, run `docker compose down`. Add `-v` only when you intentionally want to delete the local PostgreSQL data volume.
-
-### Use a real model
-
-You can use a hosted Groq-compatible provider or a locally installed Ollama model. These are **options**, not proof that any particular provider/model has been evaluated end-to-end.
-
-**Groq** (requires an API key):
-```bash
-export LLM_PROVIDER=groq
-export GROQ_API_KEY=your_key_here
-# Default: openai/gpt-oss-120b; optional: export GROQ_MODEL=another_available_model
-docker compose up --build
+```dotenv
+LLM_PROVIDER=groq
+GROQ_MODEL=openai/gpt-oss-120b
+GROQ_API_KEY=SUA_CHAVE_PRIVADA
+EMBEDDING_PROVIDER=sentence-transformer
+INSTALL_EMBEDDINGS=true
 ```
 
-**Ollama** (local model, optional embedding add-on):
-```bash
-export LLM_PROVIDER=ollama
-export EMBEDDING_PROVIDER=sentence-transformer
-export INSTALL_EMBEDDINGS=true
-docker compose --profile ollama up --build -d
-docker compose exec ollama ollama pull llama3.2:3b
-```
+A chave é obtida no [GroqCloud](https://console.groq.com/keys) e **não deve ser enviada ao GitHub**. O primeiro build com embeddings reais instala dependências maiores; o modelo pode baixar pesos na primeira utilização. Alternativamente, há um adaptador Ollama para execução local.
 
-For local Ollama, allow the model download to complete before submitting PDFs. The first sentence-transformer embedding run also downloads model weights and requires additional CPU/RAM. A Groq API key is not required in Ollama mode. If you need only the lighter deterministic indexing path, leave `EMBEDDING_PROVIDER=fake` and `INSTALL_EMBEDDINGS=false`, but note that retrieval quality will not represent real embeddings.
+| Serviço | Endereço |
+| --- | --- |
+| Interface | http://localhost:3000 |
+| Documentação interativa da API | http://localhost:8000/docs |
+| Healthcheck | http://localhost:8000/health |
+| Prontidão do banco | http://localhost:8000/ready |
 
-**Data privacy:** do not upload secret or sensitive records. External LLM providers receive relevant document excerpts. Browser sessions are anonymous capabilities, not accounts; the service is not designed to handle confidential procurement materials.
+Para encerrar sem apagar os dados: `docker compose down` (não use `-v` sem intenção de remover volumes).
 
-### Service/API examples
+**Guias:** [Linux passo a passo](docs/execucao-linux.md) · [Windows](docs/validacao-llm-real.md) · [Demonstração para revisão](docs/reviewer-demo.md).
 
-All document routes require `X-Session-ID` (an arbitrary stable client session identifier).
+## ✅ Qualidade e avaliação
 
-```bash
-curl -s http://localhost:8000/health
-curl -s http://localhost:8000/ready
-curl -X POST http://localhost:8000/api/v1/documents \
-  -H 'X-Session-ID: local-demo-session' \
-  -F 'file=@/path/to/edital.pdf'
-```
+O repositório inclui testes da API e domínio, migrações reais em PostgreSQL, testes de componentes e Playwright, análise de acessibilidade, auditoria de dependências, Gitleaks, avaliação determinística e build das imagens Docker.
 
-Use the returned document UUID to start `POST /api/v1/documents/{document_id}/analysis`, then GET `/events`, `/findings`, `/report?format=markdown`, or POST `/chat`. Full request and response contracts are exposed via `/docs`.
+[**Acompanhar o GitHub Actions**](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml)
 
-## Run tests
+A avaliação versionada possui **três documentos de referência, 15 perguntas e 15 campos anotados**. A fixture reproduzível verifica o funcionamento das métricas, mas seus números **não são acurácia de um modelo real**. Resultados de Groq/Ollama precisam ser coletados e revisados separadamente.
 
-Local developer prerequisites: Python **3.12**, Node.js **24**, pnpm **11.25.0**, and (for the full database integration suite) PostgreSQL/pgvector.
+[Metodologia e resultados de teste](docs/evaluation.md) · [Modelo de ameaça](docs/threat-model.md)
 
-```bash
-make install
-make verify
-```
-
-`make verify` checks Python lint/tests, generated TypeScript API contracts, frontend component tests/build, and the deterministic evaluation harness. The GitHub Actions pipeline additionally runs migrations against PostgreSQL, audits dependencies, scans committed secrets, and exercises the Playwright reviewer flow. The Playwright tests use network fixtures; they do **not** certify a live LLM response.
-
-For a reproducible deterministic evaluation dataset and methodology, see [Evaluation](docs/evaluation.md). Its baseline is **not** a real-world model benchmark; it intentionally includes erroneous examples to verify that scoring catches them.
-
-## Security and operational limitations
-
-- Document access is scoped to an anonymous session ID; there is **no user authentication**.
-- Documents expire after 60 minutes. Physical deletion requires scheduling `govcheck-cleanup` (recommended every 10 minutes); backups and external LLM retention are outside this prototype.
-- The rate limiter runs in memory per replica. Public deployment needs edge/distributed protection, persistent job orchestration, resource quotas, and stronger identity controls.
-- PDF inputs are untrusted. Parsing is isolated in an unprivileged container but the demo is not hardened for hostile public production traffic.
-- PNCP checks validate an allowlisted identifier and return explicit unavailable/not-found states. Results are supporting context, not compliance decisions.
-
-## Project map
+## 📂 Organização do código
 
 ```text
-apps/api/               FastAPI, application workflow, persistence, provider adapters, tests
-apps/web/               Next.js reviewer UI, component and E2E tests
-packages/evaluation/    Labeled sample dataset, metrics, reproducible test harness
-docs/                   Architecture, evaluation, threat model
-compose.yaml            Local service orchestration
-.github/workflows/      CI, security scans and checks
+apps/
+  api/                 FastAPI, domínio, RAG, nós LangGraph, adapters e testes
+  web/                 Next.js, componentes, fluxo de revisão e testes E2E
+packages/
+  evaluation/          Dataset versionado, métricas e runner ao vivo
+docs/
+  demo.md              Entrada para o vídeo e demonstração
+  architecture.md      Fluxo, integração PNCP e limites técnicos
+  decisoes-de-engenharia.md  Decisões e tradeoffs de implementação
+  evaluation.md        Métricas e metodologia
+  threat-model.md      Riscos e fronteiras de segurança
+  execucao-linux.md    Instalação e execução em Ubuntu/Linux
+compose.yaml           Orquestração local e migrações do banco
+.github/workflows/ci.yml  Integração contínua e verificações de segurança
 ```
 
-## Status and next steps
+## ⚠️ Limites e próximos passos
 
-The implementation is a **portfolio MVP in validation**, not a deployed production service. Next improvements include a separately reported real-provider benchmark, production-grade authentication, reliable background workers, OCR for image-only PDFs, distributed throttling, and production observability. No quantitative accuracy claim should be inferred from the deterministic fixtures.
+**GovCheck AI é um MVP para análise preliminar, não um parecer jurídico e não um serviço de produção.**
 
-Developed as a practical exploration of retrieval-augmented generation, multi-step LLM workflows, explainability, and safe AI-assisted review in GovTech.
+- Requer PDFs com texto selecionável; não há OCR integrado.
+- Sessões são anônimas e não substituem autenticação/controle de acesso de produção.
+- A busca usa vetores persistidos em pgvector, mas o ranking atual ocorre em memória, sem índice ANN de busca.
+- A retenção, as filas e os limites de requisição precisariam ser endurecidos antes de um deploy público.
+- Os resultados exigem comparação manual com o documento original; a validação de qualidade com LLM real é uma etapa separada.
+
+**Próximos objetivos:** medir recuperação e factualidade com editais reais, adicionar OCR opcional, autenticação, workers persistentes e observabilidade.
+
+---
+
+<div align="center">
+
+**Do documento à evidência — com revisão humana no controle.**
+
+[Documentação](docs/architecture.md) · [Demo](docs/demo.md) · [Testes](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml)
+
+</div>
