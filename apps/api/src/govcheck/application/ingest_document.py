@@ -7,7 +7,6 @@ from govcheck.domain.repositories import UnitOfWork
 from govcheck.infrastructure.pdf.extractor import PdfExtractor
 
 
-
 def safe_document_filename(filename: str) -> str:
     """Store only an inert basename within the database filename limit."""
     basename = filename.replace("\\", "/").split("/")[-1]
