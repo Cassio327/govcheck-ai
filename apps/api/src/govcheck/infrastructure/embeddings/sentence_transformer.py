@@ -24,6 +24,10 @@ class SentenceTransformerEmbeddingProvider:
         if dimension <= 0:
             raise ValueError("dimension must be greater than zero")
         self.model_name = model_name
+        model_id = model_name.rsplit("/", 1)[-1].casefold()
+        self._e5 = (
+            model_id.startswith(("e5-", "multilingual-e5-")) and "instruct" not in model_id
+        )
         self.dimension = dimension
         self._model_loader = model_loader
         self._model: Any | None = None
@@ -41,6 +45,16 @@ class SentenceTransformerEmbeddingProvider:
         return self._model
 
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
+        values = [f"passage: {text}" for text in texts] if self._e5 else list(texts)
+        return await self._embed(values)
+
+    async def embed_query(self, text: str) -> list[float]:
+        """Use a retrieval-query prefix for non-instruct E5 models."""
+        values = [f"query: {text}" if self._e5 else text]
+        vectors = await self._embed(values)
+        return vectors[0]
+
+    async def _embed(self, texts: Sequence[str]) -> list[list[float]]:
         if not texts:
             return []
         model = await self._get_model()
