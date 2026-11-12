@@ -18,11 +18,11 @@ class FindingCategory(StrEnum):
 
 class FindingDraft(DomainModel):
     category: FindingCategory
-    title: str
-    value: str
-    citation_ids: list[UUID] = Field(default_factory=list)
+    title: str = Field(min_length=1, max_length=255)
+    value: str = Field(min_length=1, max_length=2_000)
+    citation_ids: list[UUID] = Field(default_factory=list, max_length=6)
     confidence: float = Field(ge=0, le=1)
-    external_identifier: str | None = None
+    external_identifier: str | None = Field(default=None, max_length=64)
 
 
 class ExternalValidation(DomainModel):
