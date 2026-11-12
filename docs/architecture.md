@@ -54,3 +54,29 @@ idempotent GET failures receive one bounded retry.
 
 Tests use a sanitized fixture derived from the documented response contract and make no live PNCP
 request. This keeps CI deterministic while the source and check date remain explicit.
+
+## Retrieval quality and bounded model outputs
+
+The selected `intfloat/multilingual-e5-small` adapter distinguishes `passage: `
+embeddings for indexed PDF chunks from `query: ` embeddings for search questions.
+This follows its documented retrieval convention. Other embedding models receive
+their input unchanged unless they explicitly implement model-specific formatting.
+
+Structured edital analysis issues six focused retrieval queries (deadlines,
+qualification documents, values, evaluation criteria, sanctions, obligations),
+then merges results round-robin with document-ID isolation, chunk-ID
+deduplication and a 20-source limit. This makes coverage of distant sections
+more likely than a single broad query; **it does not guarantee recall**.
+
+The extraction schema accepts at most 20 findings, 6 citations per finding,
+a 255-character title and a 2,000-character value. The critic accepts at most
+20 decisions. Identical PNCP identifiers are checked once per analysis while
+each associated finding retains a distinct status. Failures to satisfy
+structured-output constraints fail the analysis rather than silently writing
+unbounded results.
+
+This RAG pipeline uses an in-memory BM25/embedding ranking of chunks already
+filtered by document ID, not an ANN index query. PostgreSQL/pgvector stores
+vectors but the present search implementation does not use approximate vector
+indices. Add indexed vector retrieval and measure recall/latency before claiming
+production-scale performance.
