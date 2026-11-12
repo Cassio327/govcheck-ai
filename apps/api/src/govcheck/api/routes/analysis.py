@@ -16,6 +16,7 @@ from govcheck.application.analysis.graph import (
     RunAnalysis,
 )
 from govcheck.domain.documents import AnalysisJob
+from govcheck.domain.llm import LLMProviderError
 
 router = APIRouter(prefix="/api/v1/documents", tags=["analysis"])
 
@@ -26,11 +27,12 @@ async def run_analysis_in_background(analysis: RunAnalysis, job: AnalysisJob) ->
     except Exception as error:
         # Background exceptions otherwise escape after the 202 response has started
         # and may be rendered by the ASGI server with their sensitive messages.
-        log_security_event(
-            "analysis.background.failed",
-            level=logging.ERROR,
-            error_type=type(error).__name__,
-        )
+        details: dict[str, str | int] = {"error_type": type(error).__name__}
+        if isinstance(error, LLMProviderError):
+            details["provider_error_code"] = error.code
+            if error.status_code is not None:
+                details["provider_status"] = error.status_code
+        log_security_event("analysis.background.failed", level=logging.ERROR, **details)
 
 
 @router.post(
