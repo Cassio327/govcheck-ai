@@ -2,9 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main, feature/govcheck-mvp]
+    branches: [main]
   pull_request:
   workflow_dispatch:
+
+# A feature pull request should run once per revision, not once on push and
+# again on pull_request. Superseded revisions are cancelled automatically.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
