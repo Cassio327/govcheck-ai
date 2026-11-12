@@ -4,7 +4,7 @@ import httpx
 import pytest
 from pydantic import BaseModel, SecretStr
 
-from govcheck.domain.llm import ChatMessage, LLMResult, TokenUsage
+from govcheck.domain.llm import ChatMessage, LLMProviderError, LLMResult, TokenUsage
 from govcheck.infrastructure.llm.groq import GroqLLMProvider
 from govcheck.infrastructure.llm.ollama import OllamaLLMProvider
 
@@ -171,3 +171,133 @@ async def test_ollama_structured_output_sends_json_schema() -> None:
         result = await provider.structured([], Deadline)
 
     assert result == Deadline(date="2026-11-13", page=4)
+
+
+@pytest.mark.asyncio
+async def test_groq_structured_retries_429_using_retry_after(monkeypatch) -> None:
+    calls = 0
+    delays: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        delays.append(seconds)
+
+    monkeypatch.setattr("govcheck.infrastructure.llm.groq.asyncio.sleep", fake_sleep)
+
+    async def handler(_: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(
+                429,
+                headers={"retry-after": "3"},
+                json={"error": {"message": "private document excerpt"}},
+            )
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": '{"date":"2026-11-13","page":4}'}}]},
+        )
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(handler),
+        base_url="https://api.groq.com/openai/v1/",
+    ) as client:
+        provider = GroqLLMProvider(
+            api_key=SecretStr("test"),
+            model="openai/gpt-oss-120b",
+            base_url=str(client.base_url),
+            client=client,
+        )
+        result = await provider.structured([], Deadline)
+
+    assert result.page == 4
+    assert calls == 2
+    assert delays == [3.0]
+
+
+@pytest.mark.asyncio
+async def test_groq_structured_retries_schema_invalid_response_once() -> None:
+    calls = 0
+
+    async def handler(_: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(200, json={"choices": [{"message": {"content": '{"date":42}'}}]})
+        return httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": '{"date":"2026-11-13","page":4}'}}]},
+        )
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(handler),
+        base_url="https://api.groq.com/openai/v1/",
+    ) as client:
+        provider = GroqLLMProvider(
+            api_key=SecretStr("test"),
+            model="openai/gpt-oss-120b",
+            base_url=str(client.base_url),
+            client=client,
+        )
+        result = await provider.structured([], Deadline)
+
+    assert result.page == 4
+    assert calls == 2
+
+
+@pytest.mark.asyncio
+async def test_groq_structured_auth_failure_exposes_only_safe_metadata() -> None:
+    requests = 0
+
+    async def handler(_: httpx.Request) -> httpx.Response:
+        nonlocal requests
+        requests += 1
+        return httpx.Response(
+            401,
+            json={"error": {"message": "confidential excerpt bearer-secret"}},
+        )
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(handler),
+        base_url="https://api.groq.com/openai/v1/",
+    ) as client:
+        provider = GroqLLMProvider(
+            api_key=SecretStr("provider-secret"),
+            model="openai/gpt-oss-120b",
+            base_url=str(client.base_url),
+            client=client,
+        )
+        with pytest.raises(LLMProviderError) as captured:
+            await provider.structured([], Deadline)
+
+    assert requests == 1
+    assert captured.value.code == "authentication"
+    assert captured.value.status_code == 401
+    assert "bearer-secret" not in str(captured.value)
+    assert "provider-secret" not in str(captured.value)
+
+
+@pytest.mark.asyncio
+async def test_groq_structured_reports_invalid_json_after_one_retry() -> None:
+    requests = 0
+
+    async def handler(_: httpx.Request) -> httpx.Response:
+        nonlocal requests
+        requests += 1
+        return httpx.Response(200, json={"choices": [{"message": {"content": "{}"}}]})
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(handler),
+        base_url="https://api.groq.com/openai/v1/",
+    ) as client:
+        provider = GroqLLMProvider(
+            api_key=SecretStr("test"),
+            model="openai/gpt-oss-120b",
+            base_url=str(client.base_url),
+            client=client,
+        )
+        with pytest.raises(LLMProviderError) as captured:
+            await provider.structured([], Deadline)
+
+    assert requests == 2
+    assert captured.value.code == "invalid_structured_output"
+    assert captured.value.status_code is None
