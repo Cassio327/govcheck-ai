@@ -7,6 +7,20 @@ from govcheck.domain.repositories import UnitOfWork
 from govcheck.infrastructure.pdf.extractor import PdfExtractor
 
 
+
+def safe_document_filename(filename: str) -> str:
+    """Store only an inert basename within the database filename limit."""
+    basename = filename.replace("\\", "/").split("/")[-1]
+    forbidden = '<>:"/\\|?*'
+    safe = "".join(char for char in basename if char.isprintable() and char not in forbidden)
+    safe = safe.strip(" .")
+    if not safe:
+        return "documento.pdf"
+    if len(safe) > 255:
+        safe = safe[:251] + safe[-4:] if safe.casefold().endswith(".pdf") else safe[:255]
+    return safe
+
+
 class IngestDocument:
     def __init__(
         self,
@@ -30,7 +44,7 @@ class IngestDocument:
         extracted_pages = self._extractor.extract(content, self._policy)
         document = Document(
             session_id=session_id,
-            filename=filename,
+            filename=safe_document_filename(filename),
             expires_at=utc_now() + timedelta(minutes=self._retention_minutes),
         )
         pages = [
