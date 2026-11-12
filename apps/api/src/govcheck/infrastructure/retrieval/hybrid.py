@@ -13,7 +13,7 @@ TOKEN_PATTERN = re.compile(r"\w+", re.UNICODE)
 
 
 class QueryEmbeddingError(RuntimeError):
-    """Raised when an embedding provider violates the single-query contract."""
+    """Raised when query embedding dimensions do not match the stored index."""
 
 
 def _tokens(text: str) -> list[str]:
@@ -112,12 +112,11 @@ class HybridRetriever:
         if not chunks:
             return []
 
-        query_vectors = await self._embedding_provider.embed_documents([query])
-        if len(query_vectors) != 1:
+        query_vector = await self._embedding_provider.embed_query(query)
+        if len(query_vector) != len(chunks[0].embedding):
             raise QueryEmbeddingError(
-                f"expected one query embedding, received {len(query_vectors)}"
+                "query embedding dimension does not match the document index"
             )
-        query_vector = query_vectors[0]
 
         vector_ranking = sorted(
             chunks,
