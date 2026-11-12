@@ -25,8 +25,8 @@ class DocumentNotAccessible(LookupError):
 class GroundedLLMAnswer(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    answer: str
-    citation_ids: list[UUID]
+    answer: str = Field(max_length=4_000)
+    citation_ids: list[UUID] = Field(max_length=6)
     confidence: float = Field(ge=0, le=1)
 
 
