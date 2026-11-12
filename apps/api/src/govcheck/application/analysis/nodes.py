@@ -120,12 +120,17 @@ def build_nodes(dependencies: AnalysisDependencies):
 
     async def external_validation(state: AnalysisState) -> dict[str, object]:
         validations: dict[int, ExternalValidation] = {}
+        checked: dict[str, ExternalValidation] = {}
         for index, draft in enumerate(state["drafts"]):
-            if draft.external_identifier:
-                validations[index] = await dependencies.tool_registry.validate_identifier(
-                    draft.external_identifier,
+            identifier = draft.external_identifier
+            if not identifier:
+                continue
+            if identifier not in checked:
+                checked[identifier] = await dependencies.tool_registry.validate_identifier(
+                    identifier,
                     document_id=state["document_id"],
                 )
+            validations[index] = checked[identifier]
         status_counts = {
             status: sum(validation.status == status for validation in validations.values())
             for status in ("verified", "not_found", "unavailable", "invalid")
@@ -136,6 +141,7 @@ def build_nodes(dependencies: AnalysisDependencies):
             "analysis.external_validation.completed",
             {
                 "validation_count": len(validations),
+                "external_requests": len(checked),
                 "validation_status_counts": status_counts,
             },
         )
