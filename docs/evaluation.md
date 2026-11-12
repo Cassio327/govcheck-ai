@@ -71,7 +71,7 @@ make eval-fake
 Para uma execução real, baixe os três PDFs oficiais para um diretório usando os nomes de `datasets/manifest.json`, inicie a API com um provedor configurado e rode:
 
 ```bash
-make eval-live EVAL_API_BASE_URL=http://localhost:8000 EVAL_DOCUMENTS_DIR=/caminho/para/pdfs EVAL_PROVIDER=groq:llama-3.3-70b-versatile
+make eval-live EVAL_API_BASE_URL=http://localhost:8000 EVAL_DOCUMENTS_DIR=/caminho/para/pdfs EVAL_PROVIDER=groq:openai/gpt-oss-120b
 ```
 
 O comando ao vivo salva as previsões brutas. Preencha `rubric_score`, `claims_total` e `claims_unsupported` após revisão humana e execute o subcomando `score` para publicar o resultado final.
