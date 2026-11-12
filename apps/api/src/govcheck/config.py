@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     database_url: str | None = None
     llm_provider: Literal["fake", "ollama", "groq"] = "fake"
     groq_api_key: SecretStr | None = Field(default=None, repr=False)
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     groq_base_url: str = "https://api.groq.com/openai/v1"
     ollama_base_url: str = "http://ollama:11434"
     ollama_model: str = "llama3.2:3b"
