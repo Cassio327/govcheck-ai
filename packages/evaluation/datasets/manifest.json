@@ -1,0 +1,37 @@
+{
+  "version": "2026.11.1",
+  "title": "GovCheck AI — editais públicos de TIC",
+  "description": "Conjunto pequeno, versionado e manualmente rotulado para medir fundamentação, extração e latência. Os PDFs permanecem nas fontes oficiais e não são redistribuídos.",
+  "expected_stages": ["indexing", "extraction", "external_validation", "evidence_critic", "synthesis", "total"],
+  "questions_file": "questions.jsonl",
+  "findings_file": "findings.jsonl",
+  "documents": [
+    {
+      "id": "ufpe-pe-90001-2024",
+      "title": "UFPE — Pregão Eletrônico 90001/2024 — outsourcing de impressão",
+      "local_filename": "ufpe-pe-90001-2024.pdf",
+      "text_based": true,
+      "artifact_status": "download_required",
+      "sha256": "2adbdd12252e03e16a1e6e888b0bef67c916b3b719c46686d57d61bb74783ea2",
+      "attribution_file": "sources/ufpe-pe-90001-2024.json"
+    },
+    {
+      "id": "unirg-pe-014-2024",
+      "title": "UnirG — Pregão Eletrônico SRP 014/2024 — materiais e equipamentos de TIC",
+      "local_filename": "unirg-pe-014-2024.pdf",
+      "text_based": true,
+      "artifact_status": "download_required",
+      "sha256": "896d33bbe6a699bb29a03b24c1d7bcc49c253c70cda54143260ef61c63f6ce48",
+      "attribution_file": "sources/unirg-pe-014-2024.json"
+    },
+    {
+      "id": "pfba-pe-002-2023",
+      "title": "Polícia Federal/BA — Pregão Eletrônico 002/2023 — suporte de TIC",
+      "local_filename": "pfba-pe-002-2023.pdf",
+      "text_based": true,
+      "artifact_status": "download_required",
+      "sha256": "1b4ec71226da17dff833130f8db42b5fe6dc1e34bc7e72da08315dd94e56dd13",
+      "attribution_file": "sources/pfba-pe-002-2023.json"
+    }
+  ]
+}

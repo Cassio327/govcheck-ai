@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A feature pull request should run once per revision, not once on push and
+# again on pull_request. Superseded revisions are cancelled automatically.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: govcheck_test
+          POSTGRES_USER: govcheck
+          POSTGRES_PASSWORD: govcheck
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U govcheck -d govcheck_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://govcheck:govcheck@localhost:5432/govcheck_test
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+      - name: Install API
+        run: python -m pip install -e 'apps/api[dev]'
+      - name: Lint API
+        run: python -m ruff check apps/api/src apps/api/tests
+      - name: Apply PostgreSQL migrations
+        run: cd apps/api && alembic upgrade head
+      - name: Test API
+        run: cd apps/api && python -m pytest
+      - name: Check generated web contracts
+        run: make check-contracts API_PYTHON=python
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install web
+        run: pnpm --dir apps/web install --frozen-lockfile
+      - name: Audit web dependencies
+        run: pnpm --dir apps/web audit --audit-level high
+      - name: Test web components
+        run: pnpm --dir apps/web test
+      - name: Type-check web
+        run: pnpm --dir apps/web exec tsc --noEmit --incremental false
+      - name: Build web
+        run: pnpm --dir apps/web build
+      - name: Install Playwright Chromium
+        run: pnpm --dir apps/web exec playwright install --with-deps chromium
+      - name: Test reviewer flow
+        run: pnpm --dir apps/web test:e2e
+
+  container-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+      - name: Build reviewer-ready service images
+        run: docker compose build api web
+
+  evaluation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: packages/evaluation/pyproject.toml
+      - name: Install evaluation harness
+        run: python -m pip install -e 'packages/evaluation[dev]'
+      - name: Test evaluation metrics and dataset
+        run: make eval-test EVAL_PYTHON=python
+      - name: Reproduce deterministic baseline
+        run: make eval-fake EVAL_PYTHON=python
+      - name: Check versioned evaluation outputs
+        run: git diff --exit-code -- docs/evaluation.md packages/evaluation/results/fake-baseline.json
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Scan repository history for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Build an isolated production dependency environment
+        run: |
+          python -m venv .audit-venv
+          .audit-venv/bin/python -m pip install --upgrade "pip>=26.2"
+          .audit-venv/bin/python -m pip install ./apps/api ./packages/evaluation
+      - name: Audit Python dependencies for known vulnerabilities
+        uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          virtual-environment: .audit-venv/

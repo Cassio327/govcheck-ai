@@ -1,0 +1,1 @@
+"""Defensive PDF extraction."""
