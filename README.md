@@ -33,7 +33,7 @@ flowchart LR
     DB --> UI
 ```
 
-The API uses application/domain/infrastructure boundaries. Analysis persists events for resumable polling over SSE; findings retain evidence states (`supported`, `unsupported`, `conflicting`). Start with the [reviewer demonstration guide](docs/reviewer-demo.md) for an honest, reproducible walkthrough. For a Windows-first real-model setup, follow the [Portuguese LLM validation walkthrough](docs/validacao-llm-real.md). Detailed boundaries are in [Architecture](docs/architecture.md), [Threat model](docs/threat-model.md), and [Evaluation](docs/evaluation.md).
+The API uses application/domain/infrastructure boundaries. Analysis persists events for resumable polling over SSE; findings retain evidence states (`supported`, `unsupported`, `conflicting`). Start with the [reviewer demonstration guide](docs/reviewer-demo.md) for an honest, reproducible walkthrough. For Linux, use the [Linux setup and real-model walkthrough (Portuguese)](docs/execucao-linux.md). For Windows, follow the [Portuguese LLM validation walkthrough](docs/validacao-llm-real.md). Detailed boundaries are in [Architecture](docs/architecture.md), [Threat model](docs/threat-model.md), and [Evaluation](docs/evaluation.md).
 
 For multilingual E5 retrieval, the adapter prefixes indexed text with `passage: ` and queries with `query: `. The retrieval ranking currently happens in application memory after document filtering; pgvector is used for storage, not approximate-nearest-neighbor search. The analysis context is bounded to 20 distinct source chunks. These are engineering choices, **not** proven accuracy gains without an evaluation run.
 
