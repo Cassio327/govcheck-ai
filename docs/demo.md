@@ -1,19 +1,26 @@
 # Demonstração — GovCheck AI
 
-> **Status:** a gravação com um edital real será adicionada após a revisão dos
-> resultados. Até lá, as informações abaixo explicam como reproduzir o produto
-> sem confundir dados de demonstração com resultados de IA real.
+> **Status:** gravação realizada em **12 de novembro de 2026** com um PDF
+> oficial e LLM real. Versão editada em Full HD (H.264, ~2min05s, sem áudio).
+> **Aguardando apenas anexar o arquivo MP4 ao GitHub.**
 
 ## Vídeo de apresentação
 
-**Vídeo completo:** *em preparação*. Este é o único link que precisa ser
-atualizado aqui depois de gravar e publicar o MP4 em um local acessível aos
-recrutadores.
+**[🎬 Área de publicação do vídeo](https://github.com/Cassio327/govcheck-ai/issues/3)**
 
-<!-- Substituir a linha acima por:
-**[▶ Assistir demonstração (aprox. 90 s)](COLE_AQUI_O_LINK_PUBLICADO)**
-Não adicionar um arquivo MP4 pesado ao histórico Git.
--->
+O arquivo foi editado a partir de uma execução do programa com o
+**Aviso de Contratação Direta nº 90007/2025**. A edição remove períodos de
+espera e janelas técnicas, acrescentando legendas de seção. Não substitui
+resultados reais por fixtures nem altera os valores mostrados pelo sistema.
+
+**O que está no registro:** processamento do PDF, seis achados estruturados
+para revisão, perguntas e respostas com trechos citados, reconhecimento de
+evidência insuficiente e conferência visual com o documento original.
+
+**Para concluir a publicação:** anexar
+`govcheck-ai-demo-final.mp4` à [issue de demonstração](https://github.com/Cassio327/govcheck-ai/issues/3).
+Depois substituir o link acima pela URL de vídeo gerada pelo GitHub, para
+que o player apareça diretamente nesta página e no README.
 
 ## O que o vídeo deve demonstrar
 
@@ -41,16 +48,13 @@ ordem real dos eventos e não oculte falhas relevantes.
 - [ ] A descrição informa o modelo usado, data e limitações da demonstração.
 - [ ] O link abre sem autenticação, depois que o repositório for tornado público.
 
-## Como adicionar o vídeo amanhã
+## Como publicar a gravação
 
-1. Grave o sistema real; exporte `govcheck-ai-demo.mp4` (H.264, 1080p).
-2. Publique o MP4 em um local acessível ao público, por exemplo anexando a
-   mídia a uma descrição/comentário do GitHub, ou disponibilizando um vídeo
-   não listado com link compartilhável.
-3. Copie a URL final e substitua a linha **Vídeo completo: em preparação**
-   neste arquivo pelo link de reprodução.
-4. No README, a seção **Demonstração** já aponta para esta página; o revisor
-   encontrará o vídeo sem precisar procurar em Issues ou Actions.
+1. Utilize a versão editada `govcheck-ai-demo-final.mp4` (H.264, 1080p; ~2,5 MB).
+2. Na [issue #3](https://github.com/Cassio327/govcheck-ai/issues/3), arraste o MP4 para um comentário e publique-o. Alternativamente,
+   no terminal autenticado: `gh issue comment 3 --attach ~/Downloads/govcheck-ai-demo-final.mp4`.
+3. Copie a URL de mídia do comentário e substitua o link da seção **Vídeo de apresentação** pela URL de reprodução.
+4. Atualize a seção **Demonstração** do README para oferecer um acesso imediato ao vídeo.
 5. Se desejar uma prévia diretamente no README, adicione depois um GIF curto
    e otimizado, gravado do mesmo fluxo real; isso é opcional.
 
