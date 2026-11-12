@@ -64,7 +64,7 @@ You can use a hosted Groq-compatible provider or a locally installed Ollama mode
 ```bash
 export LLM_PROVIDER=groq
 export GROQ_API_KEY=your_key_here
-# Optional: export GROQ_MODEL=your_supported_model
+# Default: openai/gpt-oss-120b; optional: export GROQ_MODEL=another_available_model
 docker compose up --build
 ```
 
