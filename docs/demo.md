@@ -1,54 +1,57 @@
 # Demonstração técnica — GovCheck AI
 
-> **Status da publicação:** a edição final do vídeo está concluída e revisada, mas **o MP4 ainda não foi anexado ao GitHub**. O [local de publicação é a issue #3](https://github.com/Cassio327/govcheck-ai/issues/3); a issue não é, por enquanto, um link de reprodução.
+**[▶ Assistir ao vídeo legendado — 2min06s](media/govcheck-ai-demo-legendado.mp4)**
 
-## Sobre o vídeo final
+[Arquivo MP4 no repositório](https://github.com/Cassio327/govcheck-ai/blob/main/docs/media/govcheck-ai-demo-legendado.mp4) · [Legendas em SRT](demo-captions.srt) · [Código e README](../README.md)
 
-| Propriedade | Valor |
+## O que está publicado
+
+| Item | Informação |
 | --- | --- |
-| Gravação original | 12/11/2026; execução com documento público e LLM real |
-| Edição selecionada | `govcheck-ai-demo-revisado.mp4` |
-| Duração | **2min13s** (133 segundos) |
-| Formato | MP4, H.264, 1920 × 1080, 15 FPS, sem áudio |
-| Tamanho | Aproximadamente **5,2 MB** |
-| Acessibilidade | **22 legendas em português incorporadas ao vídeo**; [arquivo SRT editável](demo-captions.srt) |
+| Gravação | 12/11/2026, execução com documento público e provedor LLM real |
+| Documento | Aviso de Contratação Direta nº 90007/2025 |
+| Vídeo publicado | `docs/media/govcheck-ai-demo-legendado.mp4` |
+| Duração | **2min06s** |
+| Formato | MP4 / H.264, 1920 × 1080, sem narração |
+| Legendas | **20 legendas em português** incorporadas; versão editável em SRT |
 
-A demonstração utiliza o **Aviso de Contratação Direta nº 90007/2025**. A gravação original possui aproximadamente três minutos; a edição removeu trechos de espera e digitação repetitiva, preservando a seleção do arquivo, o processamento, a consulta aos achados, perguntas, a resposta de evidência insuficiente e as duas exportações.
+O vídeo mostra uma execução real a partir de um PDF público e foi editado para remover tempos de espera e digitação repetitiva. Nenhuma resposta foi substituída por dados simulados. O arquivo de vídeo está hospedado neste repositório; **não é um deploy público da aplicação**.
 
-## Sequência exibida
+## Percurso da demonstração
 
-| Tempo do vídeo final (aproximado) | Cena | O que a cena evidencia |
-| --- | --- | --- |
-| 0:00–0:29 | Seleção e envio do PDF, processamento e seis achados estruturados | Fluxo de entrada e apresentação de achados para revisão |
-| 0:29–1:00 | Perguntas sobre o objeto e o valor estimado | Chat com trechos e páginas do documento |
-| 1:00–1:26 | Pergunta sobre participação | Recuperação de condições e referências verificáveis |
-| 1:26–1:45 | Pergunta sobre o percentual exato da multa | Abstenção quando a evidência é insuficiente |
-| 1:45–2:13 | Relatório Markdown e exportação JSON | Achados estruturados, citações, páginas e estados de evidência |
+| Tempo aproximado | Cena observada |
+| --- | --- |
+| 0:00–0:26 | Envio/processamento do documento e seis achados estruturados para revisão |
+| 0:26–0:57 | Perguntas sobre o objeto e o valor estimado com referências ao edital |
+| 0:57–1:23 | Pergunta sobre condições de participação e exibição das fontes |
+| 1:23–1:42 | Falta de evidência suficiente para informar o percentual exato da multa |
+| 1:42–2:06 | Relatório em Markdown e exportação de dados em JSON |
 
-### Como interpretar a demonstração
+**Nota sobre a edição:** esta versão compacta não mostra claramente o momento de seleção do arquivo no diálogo do sistema operacional e faz uma transição rápida entre as exportações. A versão revisada de 2min13s preserva melhor essas ações, mas **não é o arquivo atualmente publicado**. Não confunda as duas edições.
 
-- **Execução real, não fixture de interface:** o fluxo mostrado foi capturado com PDF público e provedor LLM configurado. O botão **“Usar edital de exemplo”**, por outro lado, usa dados fictícios e não corresponde a essa execução.
-- **Arquitetura versus evidência visual:** as legendas mencionam **RAG híbrido e LangGraph** porque essas tecnologias fazem parte da implementação documentada. O vídeo da interface, isoladamente, não comprova o algoritmo interno; consulte [arquitetura](architecture.md) e [código](../apps/api/src/govcheck/application/analysis/graph.py).
-- **Rastreabilidade não equivale a veracidade jurídica:** trechos e páginas são exibidos, mas a edição não mostra uma validação completa lado a lado do PDF original para cada achado. A revisão humana é necessária.
-- **Validação externa:** a existência de um nó/ferramenta PNCP não significa que uma chamada externa tenha necessariamente acontecido na gravação.
-- **Sem alegações de acurácia:** o vídeo é uma demonstração funcional pontual, não um benchmark de LLM real. A avaliação determinística versionada em [evaluation.md](evaluation.md) usa fixtures e não mede a acurácia de Groq/Ollama.
+## Arquitetura relacionada às cenas
 
-## Publicar o MP4 no GitHub
+```mermaid
+flowchart LR
+    P["PDF público"] --> I["Indexação por página"]
+    I --> R["RAG híbrido<br/>BM25 + embeddings"]
+    R --> A["Fluxo LangGraph<br/>extração + crítica"]
+    A --> E["Achados com evidências"]
+    E --> C["Chat contextual"]
+    E --> O["Relatórios Markdown / JSON"]
+```
 
-1. **Baixe e confira** a versão revisada `govcheck-ai-demo-revisado.mp4` (5,2 MB). Verifique que nenhuma chave, token, dado pessoal ou informação confidencial aparece na gravação.
-2. Abra a [issue pública de demonstração #3](https://github.com/Cassio327/govcheck-ai/issues/3).
-3. Na caixa de comentário, **arraste o arquivo MP4** ou use o seletor de anexos. Aguarde o GitHub concluir o upload.
-4. Publique o comentário para tornar a URL da mídia acessível. Abra o link em janela anônima para confirmar a reprodução.
-5. Copie o **link real do MP4** gerado pelo GitHub. Esse link será colocado nesta página e na seção [Demonstração do README principal](../README.md#-demonstração).
+- **Evidências:** o sistema associa trechos e páginas aos achados e indica estados `supported`, `unsupported` ou `conflicting`. As referências precisam de conferência humana.
+- **Orquestração:** RAG híbrido, LangGraph, modelos de domínio e ferramentas são demonstrados na implementação. O vídeo da interface, isoladamente, não demonstra os algoritmos internos nem prova execução de uma chamada PNCP específica.
+- **Limites:** a abstenção filmada é uma observação pontual, não uma taxa mensurada de alucinação. As métricas do [harness de avaliação](evaluation.md) foram produzidas com fixtures determinísticas e **não representam acurácia do Groq ou Ollama**.
+- **Exemplo fictício:** o botão **“Usar edital de exemplo”** carrega fixtures de interface. Não deve ser confundido com a gravação real.
 
-> **Pendente:** o link direto para reprodução só será inserido após o anexo existir. Não há vídeo hospedado ou endpoint de inferência público por trás dos links atuais.
+## Para avaliar o projeto
 
-## Para executar e verificar por conta própria
+1. [Assista ao MP4](media/govcheck-ai-demo-legendado.mp4) para compreender o fluxo do usuário.
+2. Leia o [diagrama e decisões de arquitetura](architecture.md).
+3. Consulte a [metodologia de avaliação](evaluation.md) e suas limitações.
+4. Siga o [guia do avaliador](reviewer-demo.md) e as [instruções de execução no Linux](execucao-linux.md).
+5. Verifique os [cuidados de segurança](../SECURITY.md) antes de fornecer documentos ou chaves.
 
-- [Guia para avaliadores](reviewer-demo.md): diferencia dados de exemplo, testes e uso de LLM real.
-- [Execução no Linux](execucao-linux.md): ambiente, dependências e configuração local.
-- [Arquitetura](architecture.md): pipeline RAG, orquestração e decisões técnicas.
-- [Avaliação](evaluation.md): métricas e proveniência, incluindo seus limites.
-- [Segurança](../SECURITY.md): cuidados com documentos, credenciais e exposição de serviços.
-
-**Responsabilidade:** o GovCheck AI auxilia a leitura preliminar de documentos de contratação pública. Não é parecer jurídico, não comprova conformidade e não dispensa revisão humana.
+> **Uso responsável:** o GovCheck AI é um MVP para leitura preliminar de editais. Não fornece parecer jurídico, não certifica conformidade e não substitui revisão humana.
