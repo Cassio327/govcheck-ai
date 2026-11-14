@@ -3,6 +3,11 @@
 This document is a reproducible guide for someone evaluating the repository.
 It distinguishes interface fixtures, automated tests, and real-model behavior.
 
+**Start here:** [reviewed 2m13s demo walkthrough (publication status and captions)](demo.md) →
+[system architecture](architecture.md) → [evaluation limitations](evaluation.md).
+The edited MP4 is ready but must still be attached to the public GitHub issue; the guide
+does not claim that a playable video URL is already available.
+
 ## 1. Inspect the system without credentials (2 minutes)
 
 1. Run `docker compose up --build` from the repository root.
