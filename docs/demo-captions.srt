@@ -1,0 +1,87 @@
+1
+00:00:00,000 --> 00:00:03,000
+GovCheck AI — análise de editais com IA generativa
+
+2
+00:00:03,000 --> 00:00:06,000
+Seleção de um documento público em PDF
+
+3
+00:00:06,000 --> 00:00:12,000
+Envio do PDF e início do processamento
+
+4
+00:00:12,000 --> 00:00:18,000
+RAG híbrido: busca lexical e embeddings semânticos
+
+5
+00:00:18,000 --> 00:00:24,000
+LangGraph organiza extração e crítica de evidências
+
+6
+00:00:24,000 --> 00:00:29,000
+6 achados estruturados para revisão humana
+
+7
+00:00:29,000 --> 00:00:36,000
+O chat permite perguntas sobre o edital
+
+8
+00:00:36,000 --> 00:00:42,000
+Objeto da contratação localizado no PDF
+
+9
+00:00:42,000 --> 00:00:48,000
+Resposta com página e trecho de origem
+
+10
+00:00:48,000 --> 00:00:54,000
+Nova consulta: valor estimado da contratação
+
+11
+00:00:54,000 --> 00:01:00,000
+Resposta fundamentada em trecho da página 1
+
+12
+00:01:00,000 --> 00:01:07,000
+Pergunta sobre quem pode participar
+
+13
+00:01:07,000 --> 00:01:17,000
+Condições de participação recuperadas do edital
+
+14
+00:01:17,000 --> 00:01:26,000
+Trechos e páginas permitem conferir a resposta
+
+15
+00:01:26,000 --> 00:01:33,000
+Pergunta: qual é o percentual exato da multa?
+
+16
+00:01:33,000 --> 00:01:40,000
+Sem evidência suficiente, o sistema se abstém
+
+17
+00:01:40,000 --> 00:01:45,000
+O assistente não inventa um percentual
+
+18
+00:01:45,000 --> 00:01:50,000
+Download do relatório em Markdown
+
+19
+00:01:50,000 --> 00:01:55,000
+O relatório reúne achados e informações rastreáveis
+
+20
+00:01:55,000 --> 00:01:59,000
+Preparação da exportação estruturada em JSON
+
+21
+00:01:59,000 --> 00:02:06,000
+Exportação dos achados em formato JSON
+
+22
+00:02:06,000 --> 00:02:13,100
+Citações, páginas e estados de evidência para revisão
