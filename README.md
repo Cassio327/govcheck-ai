@@ -8,7 +8,7 @@
 
 `FastAPI` · `LangGraph` · `RAG híbrido` · `Groq / Ollama` · `Next.js` · `PostgreSQL + pgvector`
 
-[**▶ Demonstração**](docs/demo.md) · [**Arquitetura**](docs/architecture.md) · [**Decisões técnicas**](docs/decisoes-de-engenharia.md) · [**Executar no Linux**](docs/execucao-linux.md)
+[**▶ Demonstração e status do vídeo**](docs/demo.md) · [**Arquitetura**](docs/architecture.md) · [**Avaliação**](docs/evaluation.md) · [**Guia para avaliadores**](docs/reviewer-demo.md) · [**Executar no Linux**](docs/execucao-linux.md)
 
 [![CI](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
@@ -20,6 +20,22 @@
 ---
 
 > **Por que este projeto existe?** Editais e avisos de contratação concentram datas, exigências de habilitação, critérios de julgamento e obrigações em documentos extensos. Um resumo sem fontes pode ocultar cláusulas ou induzir a erros. O GovCheck AI foi construído para **encontrar informações, organizar achados e mostrar de onde cada afirmação veio**, sem substituir a revisão humana.
+
+## Para avaliadores técnicos — visão em 60 segundos
+
+| Dimensão | Evidência no repositório |
+| --- | --- |
+| **Problema de negócio** | Editais extensos, requisitos dispersos, necessidade de decisões revisáveis e rastreáveis |
+| **Entrada e saída** | PDF textual → indexação → evidências → achados estruturados → relatório Markdown/JSON e chat |
+| **Arquitetura GenAI** | RAG híbrido (BM25 + E5 + RRF), LangGraph, Groq/Ollama, contratos Pydantic e FastAPI |
+| **Orquestração** | Grafo de etapas especializadas: extração, checagem externa opcional, crítica de fontes e síntese |
+| **Evidências** | Citações por página e estados `supported`, `unsupported`, `conflicting` para revisão humana |
+| **Engenharia** | Next.js, PostgreSQL/pgvector, Docker, migrações, testes, CI e verificações de segurança |
+| **Avaliação** | Três documentos de referência, 15 perguntas e 15 campos anotados; fixture determinística **não** é medição de qualidade de LLM real |
+
+O termo *multiagente* aqui descreve **etapas especializadas coordenadas por um grafo**, não agentes autônomos sem supervisão. O uso de LLMs reais exige configurar um provedor e revisar as saídas. Este MVP não é um serviço público de produção nem substitui análise jurídica.
+
+**Caminho recomendado:** [Vídeo e demonstração](docs/demo.md) → [Arquitetura](docs/architecture.md) → [Avaliação e limites](docs/evaluation.md) → [Execução e testes](docs/reviewer-demo.md).
 
 ## 🎬 Demonstração
 
@@ -91,7 +107,7 @@ EMBEDDING_PROVIDER=sentence-transformer
 INSTALL_EMBEDDINGS=true
 ```
 
-A chave é obtida no [GroqCloud](https://console.groq.com/keys) e **não deve ser enviada ao GitHub**. O primeiro build com embeddings reais instala dependências maiores; o modelo pode baixar pesos na primeira utilização. Alternativamente, há um adaptador Ollama para execução local.
+A chave é obtida no [GroqCloud](https://console.groq.com/keys) e **não deve ser enviada ao GitHub**. A senha de PostgreSQL em `.env.example` é **exclusivamente demonstrativa**: substitua-a por uma credencial forte e exclusiva antes de qualquer implantação que não seja local. Não publique o arquivo `.env`. O primeiro build com embeddings reais instala dependências maiores; o modelo pode baixar pesos na primeira utilização. Alternativamente, há um adaptador Ollama para execução local.
 
 | Serviço | Endereço |
 | --- | --- |
