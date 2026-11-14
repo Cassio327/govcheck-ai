@@ -37,25 +37,24 @@ O termo *multiagente* aqui descreve **etapas especializadas coordenadas por um g
 
 **Caminho recomendado:** [Vídeo e demonstração](docs/demo.md) → [Arquitetura](docs/architecture.md) → [Avaliação e limites](docs/evaluation.md) → [Execução e testes](docs/reviewer-demo.md).
 
-## 🎬 Demonstração
+## 🎬 Demonstração — execução real
 
-**[🎬 Demonstração técnica — vídeo real](docs/demo.md)** · [Área de publicação do MP4](https://github.com/Cassio327/govcheck-ai/issues/3)
+**Vídeo final revisado:** **2min13s · 1080p · MP4/H.264 · 22 legendas em português incorporadas**.
 
-Gravação realizada em **12/11/2026**, com um aviso oficial de contratação,
-Groq e RAG híbrido. A versão editada (Full HD, aproximadamente 2 minutos,
-sem áudio e com legendas) já está preparada; **a anexação do arquivo ao GitHub
-ainda está pendente**. As cenas mostram execução real — não o exemplo fictício
-da interface.
+**Publicação da mídia:** a edição está concluída, mas **o arquivo MP4 ainda precisa ser anexado ao GitHub**. A [issue #3 é o local preparado para o upload](https://github.com/Cassio327/govcheck-ai/issues/3), **não** um player de vídeo neste momento.
 
-| Fluxo | O que observar |
+[**Roteiro, conteúdo revisado e instruções de publicação**](docs/demo.md) · [**Legendas SRT editáveis**](docs/demo-captions.srt) · [**Guia para reproduzir com LLM real**](docs/reviewer-demo.md)
+
+O vídeo documenta uma execução com PDF público e provedor LLM, não o cenário fictício do botão de exemplo da interface:
+
+| Cena | Evidência visual |
 | --- | --- |
-| **Upload** | PDF textual com leitura e indexação por página (até 5 MiB e 50 páginas) |
-| **Análise estruturada** | Prazos, documentos, valores, critérios, sanções e obrigações |
-| **Evidências** | Trechos recuperados, número da página e indicação de suporte ou conflito |
-| **Chat com RAG** | Perguntas sobre o documento, respostas com citações ou insuficiência de evidências |
-| **Relatório** | Exportação Markdown/JSON com achados e proveniência das validações |
+| **0:00–0:29 · Entrada** | Seleção e envio do PDF, processamento e seis achados estruturados |
+| **0:29–1:26 · Consultas** | Perguntas sobre objeto, valor e participação, com trechos e páginas de origem |
+| **1:26–1:45 · Limites** | Reconhecimento de evidência insuficiente, sem inventar percentual de multa |
+| **1:45–2:13 · Saída** | Relatórios em Markdown e JSON, com citações e estados de evidência |
 
-> O botão **“Usar edital de exemplo”** carrega dados *fictícios para demonstrar a interface*. Não é uma execução de um LLM. Para observar a análise real, configure Groq ou Ollama e envie um PDF público.
+A [arquitetura RAG/LangGraph](docs/architecture.md) é verificável no código e na documentação; a gravação da interface **não é um benchmark de acurácia** nem certifica conformidade jurídica. A avaliação determinística usa fixtures, conforme [metodologia](docs/evaluation.md). Resultados exigem revisão humana.
 
 ## 🧠 Como funciona
 
@@ -139,7 +138,8 @@ apps/
 packages/
   evaluation/          Dataset versionado, métricas e runner ao vivo
 docs/
-  demo.md              Entrada para o vídeo e demonstração
+  demo.md              Roteiro revisado, limites e procedimento de publicação
+  demo-captions.srt     22 legendas sincronizadas com o vídeo revisado
   architecture.md      Fluxo, integração PNCP e limites técnicos
   decisoes-de-engenharia.md  Decisões e tradeoffs de implementação
   evaluation.md        Métricas e metodologia
