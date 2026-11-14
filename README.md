@@ -8,7 +8,7 @@
 
 `FastAPI` · `LangGraph` · `RAG híbrido` · `Groq / Ollama` · `Next.js` · `PostgreSQL + pgvector`
 
-[**▶ Demonstração e status do vídeo**](docs/demo.md) · [**Arquitetura**](docs/architecture.md) · [**Avaliação**](docs/evaluation.md) · [**Guia para avaliadores**](docs/reviewer-demo.md) · [**Executar no Linux**](docs/execucao-linux.md)
+[**▶ Assistir à demonstração (2min06s)**](docs/media/govcheck-ai-demo-legendado.mp4) · [**Arquitetura**](docs/architecture.md) · [**Avaliação**](docs/evaluation.md) · [**Guia para avaliadores**](docs/reviewer-demo.md) · [**Executar no Linux**](docs/execucao-linux.md)
 
 [![CI](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Cassio327/govcheck-ai/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
@@ -39,22 +39,20 @@ O termo *multiagente* aqui descreve **etapas especializadas coordenadas por um g
 
 ## 🎬 Demonstração — execução real
 
-**Vídeo final revisado:** **2min13s · 1080p · MP4/H.264 · 22 legendas em português incorporadas**.
+**[▶ Assistir ao vídeo do GovCheck AI (2min06s · 1080p · legendado)](docs/media/govcheck-ai-demo-legendado.mp4)**
 
-**Publicação da mídia:** a edição está concluída, mas **o arquivo MP4 ainda precisa ser anexado ao GitHub**. A [issue #3 é o local preparado para o upload](https://github.com/Cassio327/govcheck-ai/issues/3), **não** um player de vídeo neste momento.
+[**Roteiro e contexto técnico**](docs/demo.md) · [**Legendas SRT**](docs/demo-captions.srt) · [**Guia do avaliador**](docs/reviewer-demo.md)
 
-[**Roteiro, conteúdo revisado e instruções de publicação**](docs/demo.md) · [**Legendas SRT editáveis**](docs/demo-captions.srt) · [**Guia para reproduzir com LLM real**](docs/reviewer-demo.md)
+O vídeo publicado mostra uma execução com um **PDF público de contratação** e um provedor LLM real. Não é a interface fictícia acionada pelo botão **“Usar edital de exemplo”**.
 
-O vídeo documenta uma execução com PDF público e provedor LLM, não o cenário fictício do botão de exemplo da interface:
-
-| Cena | Evidência visual |
+| Cena | O que observar |
 | --- | --- |
-| **0:00–0:29 · Entrada** | Seleção e envio do PDF, processamento e seis achados estruturados |
-| **0:29–1:26 · Consultas** | Perguntas sobre objeto, valor e participação, com trechos e páginas de origem |
-| **1:26–1:45 · Limites** | Reconhecimento de evidência insuficiente, sem inventar percentual de multa |
-| **1:45–2:13 · Saída** | Relatórios em Markdown e JSON, com citações e estados de evidência |
+| **0:00–0:26 · Documento** | Upload/processamento do PDF e seis achados estruturados |
+| **0:26–1:23 · Chat e evidências** | Perguntas sobre objeto, valor e participação, com trechos e páginas citadas |
+| **1:23–1:42 · Abstenção** | O sistema sinaliza a ausência de evidência suficiente para informar um percentual de multa |
+| **1:42–2:06 · Relatórios** | Exportações em Markdown e JSON com informações rastreáveis |
 
-A [arquitetura RAG/LangGraph](docs/architecture.md) é verificável no código e na documentação; a gravação da interface **não é um benchmark de acurácia** nem certifica conformidade jurídica. A avaliação determinística usa fixtures, conforme [metodologia](docs/evaluation.md). Resultados exigem revisão humana.
+A gravação é uma **demonstração de funcionalidades**, não um benchmark de acurácia de LLM ou certificação jurídica. RAG híbrido, LangGraph e decisões de arquitetura podem ser inspecionados no [código e na documentação](docs/architecture.md). Resultados exigem conferência humana.
 
 ## 🧠 Como funciona
 
@@ -138,8 +136,9 @@ apps/
 packages/
   evaluation/          Dataset versionado, métricas e runner ao vivo
 docs/
-  demo.md              Roteiro revisado, limites e procedimento de publicação
-  demo-captions.srt     22 legendas sincronizadas com o vídeo revisado
+  demo.md              Vídeo publicado, roteiro e limites da demonstração
+  demo-captions.srt     20 legendas sincronizadas com o vídeo publicado
+  media/               Vídeo MP4 legendado da execução real
   architecture.md      Fluxo, integração PNCP e limites técnicos
   decisoes-de-engenharia.md  Decisões e tradeoffs de implementação
   evaluation.md        Métricas e metodologia
