@@ -34,7 +34,11 @@ em Issues. Prefira **Private vulnerability reporting** no GitHub caso
 esteja habilitado para o repositório; caso contrário, entre em contato com
 o responsável pelo projeto por um canal privado antes da divulgação.
 
-## Antes de disponibilizar publicamente
+## Antes de compartilhar demonstrações ou expor serviços
+
+**O repositório de código é público**, mas isso não significa que o sistema esteja
+implantado como serviço público ou adequado a documentos sensíveis. Revise este
+checklist antes de publicar **novos anexos, gravações ou instalações acessíveis externamente**.
 
 - [ ] Revisar histórico Git e anexos por segredos, inclusive screenshots.
 - [ ] Validar o deploy em ambiente isolado e não expor portas ou serviços
